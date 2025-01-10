@@ -1,18 +1,19 @@
-import { useAuth } from "@/context/AuthProvider";
+
 import { useRouter } from "next/navigation";
 import { useLayoutEffect } from "react";
+import { useAuth } from "react-oidc-context";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const auth = useAuth();
   const router = useRouter();
 
   useLayoutEffect(() => {
-    if (!loading && !user) {
+    if (!auth.isLoading && !auth.isAuthenticated) {
       router.replace('/');
     }
-  }, [user, loading, router]);
+  }, [auth, router]);
 
-  if (loading || !user) return null;
+  if (auth.isLoading || !auth.isAuthenticated) return null;
 
   return <>{children}</>;
 } 

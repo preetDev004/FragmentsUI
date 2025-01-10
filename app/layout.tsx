@@ -1,9 +1,8 @@
-import { AuthProvider } from "@/context/AuthProvider";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import MaxWidthWrapper from "../components/MaxWidthWrapper";
-import ConfigureAmplifyClient from "./auth-config";
 import "./globals.css";
+import { Navbar } from "@/components/Navbar";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,12 +28,9 @@ function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
-        <ConfigureAmplifyClient />
-          <AuthProvider>
-            <MaxWidthWrapper>{children}</MaxWidthWrapper>
-          </AuthProvider>
+        <MaxWidthWrapper><Navbar />{children}</MaxWidthWrapper>
       </body>
     </html>
   );
