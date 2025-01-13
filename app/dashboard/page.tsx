@@ -22,6 +22,7 @@ const DashboardPage = () => {
         const userFragments = await getUserFragments(
           covertAuthToUser(auth.user)
         );
+        console.log(auth.user);
         console.log(userFragments);
       }
     };

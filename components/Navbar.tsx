@@ -7,25 +7,25 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { AuthContextProps, useAuth } from "react-oidc-context";
 
-const signIn = async (auth: AuthContextProps) => {
-  try {
-    await auth.signinRedirect()
-  } catch (error) {
-    console.error(error);
-  }
-};
-const signOut = async (auth: AuthContextProps) => {
-  try {
-    await auth.removeUser();
-    signOutRedirect();
-  } catch (error) {
-    console.error(error);
-  }
-};
-
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const auth = useAuth();
+
+  const signIn = async (auth: AuthContextProps) => {
+    try {
+      await auth.signinRedirect()
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const signOut = async (auth: AuthContextProps) => {
+    try {
+      await auth.removeUser();
+      signOutRedirect();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const menuItems = [
     { label: "Features", href: "#features" },

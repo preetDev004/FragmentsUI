@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import MaxWidthWrapper from "../components/MaxWidthWrapper";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { Providers } from "@/components/AuthProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,9 +29,15 @@ function RootLayout({
   return (
     <html lang="en">
       <body
+      suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
-        <MaxWidthWrapper><Navbar />{children}</MaxWidthWrapper>
+        <Providers>
+          <MaxWidthWrapper>
+            <Navbar />
+            {children}
+          </MaxWidthWrapper>
+        </Providers>
       </body>
     </html>
   );
