@@ -9,9 +9,10 @@ const cognitoAuthConfig = {
   client_id: process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID,
   redirect_uri: process.env.NEXT_PUBLIC_OAUTH_SIGN_IN_REDIRECT_URL,
   response_type: "code",
+  revokeTokenTypes: ['refresh_token'],
   scope: "email openid phone",
+  automaticSilentRenew: false,
 };
-
 const MaxWidthWrapper = ({
   classname,
   children,

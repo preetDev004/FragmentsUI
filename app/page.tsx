@@ -16,9 +16,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "react-oidc-context";
-import { getUserFragments } from "./api";
-import { useEffect } from "react";
-import { covertAuthToUser } from "@/utils/user";
 
 export const signOutRedirect = () => {
   const clientId = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID!;
@@ -31,17 +28,6 @@ export const signOutRedirect = () => {
 export default function Home() {
   const auth = useAuth();
   const router = useRouter();
-  useEffect(() => {
-    const fetchUserFragments = async () => {
-      if (auth.isAuthenticated && auth.user) {
-        const user = covertAuthToUser(auth.user);
-        const userFragments = await getUserFragments(user);
-        console.log(userFragments);
-      }
-    };
-    fetchUserFragments();
-    
-  }, [auth]);
 
   if (auth.isLoading) {
     return <div>Loading...</div>;
@@ -53,8 +39,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-black to-orange-950">
-      
-
       {/* Main Content */}
       <main>
         {/* Hero Section */}
@@ -207,7 +191,6 @@ export default function Home() {
       <Footer />
     </div>
   );
-
 }
 
 function FeatureCard({

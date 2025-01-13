@@ -5,7 +5,23 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "react-oidc-context";
+import { AuthContextProps, useAuth } from "react-oidc-context";
+
+const signIn = async (auth: AuthContextProps) => {
+  try {
+    await auth.signinRedirect()
+  } catch (error) {
+    console.error(error);
+  }
+};
+const signOut = async (auth: AuthContextProps) => {
+  try {
+    await auth.removeUser();
+    signOutRedirect();
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,17 +57,14 @@ export function Navbar() {
             ))}
             {auth.isAuthenticated ? (
               <Button
-                onClick={() => {
-                  auth.removeUser();
-                  signOutRedirect();
-                }}
+                onClick={() => signOut(auth)}
                 className="bg-orange-500 hover:bg-orange-600 hover:underline hover:underline-offset-2"
               >
                 <span>Log Out</span>
               </Button>
             ) : (
               <Button
-                onClick={() => auth.signinRedirect()}
+                onClick={() => signIn(auth)}
                 className="bg-orange-500 hover:bg-orange-600 hover:underline hover:underline-offset-2"
               >
                 Sign In
@@ -92,9 +105,21 @@ export function Navbar() {
                 </a>
               ))}
               <div className="pt-2 pb-1">
-                <Button className="w-full bg-orange-500 hover:bg-orange-600">
-                  Get Started
-                </Button>
+                {auth.isAuthenticated ? (
+                  <Button
+                    onClick={() => signOut(auth)}
+                    className="w-full bg-orange-500 hover:bg-orange-600"
+                  >
+                    Log Out
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => signIn(auth)}
+                    className="w-full bg-orange-500 hover:bg-orange-600"
+                  >
+                    Sign In
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>
