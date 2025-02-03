@@ -1,7 +1,6 @@
+import { FragmentType } from "@/utils/types";
 import { User } from "@/utils/user";
 
-// Fragments microservice API to use, defaults to localhost:8080 if not set in env
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 
 /**
@@ -12,7 +11,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 export async function getUserFragments(user: User) {
   console.log('Requesting user fragments data...');
   try {
-    const res = await fetch(`${apiUrl}/v1/fragments`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
       headers: user.authorizationHeaders(),
     });
 
@@ -26,4 +25,35 @@ export async function getUserFragments(user: User) {
   } catch (err) {
     console.error('Unable to call GET /v1/fragments', { err });
   }
+}
+
+export const addUserFragment = async ({
+  type,
+  content,
+  file,
+  user
+}: {
+  type: FragmentType;
+  content: string;
+  file: File | null;
+  user: User
+}): Promise<unknown> => {
+  const formData = new FormData();
+  formData.append("type", type);
+  if (file) {
+    formData.append("file", file);
+  } else {
+    formData.append("content", content);
+  }
+
+  const response  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
+    method: "POST",
+    body: formData,
+    headers: user.authorizationHeaders(),
+  });
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
+
+  return await response.json();
 }

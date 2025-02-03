@@ -7,12 +7,12 @@ export interface User {
   authorizationHeaders: () => Record<string, string>;
 }
 
-export const covertAuthToUser = (auth: OidcUser): User => {
+export const covertAuthToUser = (auth: OidcUser, type: string): User => {
   return {
     username: auth.profile.name!,
     idToken: auth.id_token!,
     accessToken: auth.access_token!,
-    authorizationHeaders: (type = "application/json") => {
+    authorizationHeaders: () => {
       const headers: Record<string, string> = { "Content-Type": type };
       headers["Authorization"] = `Bearer ${auth.id_token}`;
       return headers;

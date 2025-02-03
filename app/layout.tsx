@@ -4,6 +4,8 @@ import MaxWidthWrapper from "../components/MaxWidthWrapper";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/AuthProvider";
+import { Toaster } from "@/components/ui/toaster";
+import QueryProvider from "@/components/QueryProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,14 +31,17 @@ function RootLayout({
   return (
     <html lang="en">
       <body
-      suppressHydrationWarning
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black`}
       >
         <Providers>
-          <MaxWidthWrapper>
-            <Navbar />
-            {children}
-          </MaxWidthWrapper>
+          <QueryProvider>
+            <MaxWidthWrapper>
+              <Navbar />
+              {children}
+            </MaxWidthWrapper>
+          </QueryProvider>
+          <Toaster />
         </Providers>
       </body>
     </html>

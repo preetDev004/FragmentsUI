@@ -1,13 +1,6 @@
 "use client";
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { covertAuthToUser } from "@/utils/user";
-import { useEffect } from "react";
-import { useAuth } from "react-oidc-context";
-import { getUserFragments } from "../api";
-import Image from "next/image";
-import { VALID_FRAGMENT_TYPES } from "@/constants";
-import { useState, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -24,13 +17,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
-import { FileText, Image as Img, AlertCircle, Upload, X, Plus } from "lucide-react";
+import { VALID_FRAGMENT_TYPES } from "@/constants";
+import { covertAuthToUser } from "@/utils/user";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
+import { addUserFragment, getUserFragments } from "../api";
+// import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { FileWithPreview, FragmentType } from "@/utils/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { cn } from '@/lib/utils';
+import {
+  AlertCircle,
+  FileText,
+  Image as Img,
+  Plus,
+  Upload,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import { queryClient } from "@/components/QueryProvider";
 
 const DashboardPage = () => {
   const auth = useAuth();
+  const [isOpen, setIsOpen] = useState(false)
+
+  const fetchUserFragments = async () => {
+    if (auth.isAuthenticated && auth.user) {
+      const userFragments = await getUserFragments(
+        covertAuthToUser(auth.user, "application/json")
+      );
+      console.log(userFragments);
+      return userFragments || null
+
+    }
+    
+  };
+
+  const { data: fragments } = useQuery({
+    queryKey: ["getFgms"],
+    queryFn: fetchUserFragments,
+  });
+  console.log(fragments)
 
   useEffect(() => {
     // Clean up URL parameters after successful authentication
@@ -40,75 +69,90 @@ const DashboardPage = () => {
       window.history.replaceState({}, document.title, cleanUrl);
     }
 
-    const fetchUserFragments = async () => {
-      if (auth.isAuthenticated && auth.user) {
-        const userFragments = await getUserFragments(
-          covertAuthToUser(auth.user)
-        );
-        console.log(auth.user);
-        console.log(userFragments);
-      }
-    };
-    fetchUserFragments();
+    
   }, [auth]);
   return (
     <ProtectedRoute>
-    <div className="h-auto max-h-screen">
-      
-      <main className="pt-20 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex justify-between items-center mb-8 transition-all duration-200">
-              <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
-                Dashboard
-              </h1>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="bg-orange-500 hover:bg-orange-600">
-                    <Plus className="mr-2 h-4 w-4" /> Add Fragment
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="bg-black/95 border-orange-900/50 text-white flex flex-col items-start justify-center">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
-                      Fragment Details
-                    </DialogTitle>
-                  </DialogHeader>
-                  <CreateFragmentForm />
-                </DialogContent>
-              </Dialog>
-            </div>
+      <div className="h-auto max-h-screen">
+        <main className="pt-20 pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="flex justify-between items-center mb-8 transition-all duration-200">
+                <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
+                  Dashboard
+                </h1>
 
-            {/* Dashboard Content */}
-            <Card className="p-6 bg-black/40 border-orange-900/50">
-              <p className="text-gray-400">Your fragments will appear here.</p>
-            </Card>
-          </motion.div>
-        </div>
-      </main>
-    </div>
+                <Dialog open={isOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-orange-500 hover:bg-orange-600" onClick={()=>setIsOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" /> Add Fragment
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-black/95 border-orange-900/50 text-white flex flex-col items-start justify-center">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
+                        Fragment Details
+                      </DialogTitle>
+                    </DialogHeader>
+                    <CreateFragmentForm setIsOpen={setIsOpen} />
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Dashboard Content */}
+              <Card className="p-6 bg-black/40 border-orange-900/50">
+                
+                  <p className="text-gray-400">
+                    Your fragments will appear here.
+                  </p>
+               
+              </Card>
+            </motion.div>
+          </div>
+        </main>
+      </div>
     </ProtectedRoute>
   );
 };
 export default DashboardPage;
 
-type FragmentType = typeof VALID_FRAGMENT_TYPES[number];
-interface FileWithPreview extends File {
-  preview?: string;
-}
+function CreateFragmentForm({setIsOpen} : {setIsOpen : Dispatch<SetStateAction<boolean>>}) {
+  const { toast } = useToast();
+  const auth = useAuth();
 
-function CreateFragmentForm() {
-  const [selectedType, setSelectedType] = useState<FragmentType>('text/plain');
-  const [content, setContent] = useState('');
-  const [error, setError] = useState('');
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedType, setSelectedType] = useState<FragmentType>("text/plain");
+  const [content, setContent] = useState("");
+  const [error, setError] = useState("");
+  // const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<FileWithPreview | null>(null);
+
+  const mutation = useMutation({
+    mutationFn: addUserFragment,
+    mutationKey: ["addFgm"],
+    onSuccess: () => {
+      toast({
+        title: "Fragment Created Successfully!",
+        description: `It's a ${selectedType} fragment.`,
+        variant: "success",
+      });
+      setContent("");
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: ['getFgms'] })
+      setIsOpen(false)
+    },
+    onError: (err: Error) => {
+      toast({
+        title: "Error Creating Fragment",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Cleanup object URLs
   useEffect(() => {
@@ -121,18 +165,18 @@ function CreateFragmentForm() {
 
   const validateContent = (type: FragmentType, content: string) => {
     if (!content.trim() && !file) {
-      return 'Content cannot be empty';
+      return "Content cannot be empty";
     }
 
-    if (type === 'application/json' && !file) {
+    if (type === "application/json" && !file) {
       try {
         JSON.parse(content);
       } catch {
-        return 'Invalid JSON format';
+        return "Invalid JSON format";
       }
     }
 
-    return '';
+    return "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,33 +186,30 @@ function CreateFragmentForm() {
       setError(validationError);
       return;
     }
-    setError('');
-
-    // Simulate upload progress
-    setUploadProgress(0);
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
+    setError("");
+    mutation.mutate({
+      type: selectedType,
+      content,
+      file,
+      user: covertAuthToUser(auth.user!, selectedType),
+    });
   };
 
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && droppedFile.type === selectedType) {
-      handleFileSelection(droppedFile);
-    } else {
-      setError(`Please drop a valid ${selectedType} file`);
-      e.dataTransfer.clearData();
-    }
-  }, [selectedType]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragging(false);
+
+      const droppedFile = e.dataTransfer.files[0];
+      if (droppedFile && droppedFile.type === selectedType) {
+        handleFileSelection(droppedFile);
+      } else {
+        setError(`Please drop a valid ${selectedType} file`);
+        e.dataTransfer.clearData();
+      }
+    },
+    [selectedType]
+  );
 
   const handleFileSelection = (selectedFile: File) => {
     if (selectedFile.type !== selectedType) {
@@ -176,15 +217,16 @@ function CreateFragmentForm() {
       return;
     }
     const fileWithPreview = selectedFile as FileWithPreview;
-    if (selectedFile.type.startsWith('image/')) {
+    if (selectedFile.type.startsWith("image/")) {
       fileWithPreview.preview = URL.createObjectURL(selectedFile);
     }
-    
+
     setFile(fileWithPreview);
-    setError('');
+    setError("");
   };
 
-  const isTextType = selectedType.startsWith('text/') || selectedType === 'application/json';
+  const isTextType =
+    selectedType.startsWith("text/") || selectedType === "application/json";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 w-full">
@@ -196,7 +238,7 @@ function CreateFragmentForm() {
           onValueChange={(value: FragmentType) => {
             setSelectedType(value);
             setFile(null);
-            setContent('');
+            setContent("");
           }}
         >
           <SelectTrigger className="w-full bg-black/40 border-orange-900/50 text-white">
@@ -207,11 +249,18 @@ function CreateFragmentForm() {
               <div className="text-orange-500 flex items-center gap-2 mb-2">
                 <FileText size={16} /> Text Formats
               </div>
-              {VALID_FRAGMENT_TYPES.filter(type => type.startsWith('text/') || type === 'application/json').map(type => (
+              {VALID_FRAGMENT_TYPES.filter(
+                (type) =>
+                  type.startsWith("text/") || type === "application/json"
+              ).map((type) => (
                 <SelectItem
                   key={type}
                   value={type}
-                  className={`${type === selectedType? "text-orange-500 underline underline-offset-4": "text-gray-300"} hover:text-orange-500 hover:bg-orange-950/30 cursor-pointer`}
+                  className={`${
+                    type === selectedType
+                      ? "text-orange-500 underline underline-offset-4"
+                      : "text-gray-300"
+                  } hover:text-orange-500 hover:bg-orange-950/30 cursor-pointer`}
                 >
                   {type}
                 </SelectItem>
@@ -219,11 +268,17 @@ function CreateFragmentForm() {
               <div className="text-orange-500 flex items-center gap-2 mb-2 mt-4">
                 <Img size={16} /> Image Formats
               </div>
-              {VALID_FRAGMENT_TYPES.filter(type => type.startsWith('image/')).map(type => (
+              {VALID_FRAGMENT_TYPES.filter((type) =>
+                type.startsWith("image/")
+              ).map((type) => (
                 <SelectItem
                   key={type}
                   value={type}
-                  className={`${type === selectedType? "text-orange-500 underline underline-offset-4": "text-gray-300"} hover:text-orange-500 hover:bg-orange-950/30 cursor-pointer`}
+                  className={`${
+                    type === selectedType
+                      ? "text-orange-500 underline underline-offset-4"
+                      : "text-gray-300"
+                  } hover:text-orange-500 hover:bg-orange-950/30 cursor-pointer`}
                 >
                   {type}
                 </SelectItem>
@@ -247,7 +302,9 @@ function CreateFragmentForm() {
           <div
             className={cn(
               "relative border-2 border-dashed rounded-lg p-8 transition-colors",
-              isDragging ? "border-orange-500 bg-orange-950/20" : "border-orange-900/50 hover:border-orange-500/50",
+              isDragging
+                ? "border-orange-500 bg-orange-950/20"
+                : "border-orange-900/50 hover:border-orange-500/50"
             )}
             onDragOver={(e) => {
               e.preventDefault();
@@ -305,7 +362,7 @@ function CreateFragmentForm() {
                         handleFileSelection(selectedFile);
                       } else {
                         setError(`Please select a valid ${selectedType} file`);
-                        e.target.value = '';
+                        e.target.value = "";
                       }
                     }
                   }}
@@ -318,7 +375,8 @@ function CreateFragmentForm() {
                   <span className="ml-2">or drag and drop</span>
                 </div>
                 <p className="text-xs leading-5 text-gray-400">
-                  Only <span className="font-semibold">{selectedType}</span> files are accepted
+                  Only <span className="font-semibold">{selectedType}</span>{" "}
+                  files are accepted
                 </p>
               </label>
             )}
@@ -327,12 +385,12 @@ function CreateFragmentForm() {
       </div>
 
       {/* Upload Progress */}
-      {uploadProgress > 0 && uploadProgress < 100 && (
+      {/* {uploadProgress > 0 && uploadProgress < 100 && (
         <div className="space-y-2">
           <Progress value={uploadProgress} className="h-2 bg-orange-950/30" />
           <p className="text-sm text-gray-400 text-center">{uploadProgress}% uploaded</p>
         </div>
-      )}
+      )} */}
 
       {/* Error Message */}
       {error && (
@@ -346,7 +404,7 @@ function CreateFragmentForm() {
       <Button
         type="submit"
         className="w-full bg-orange-500 hover:bg-orange-600 transition-colors"
-        disabled={uploadProgress > 0 && uploadProgress < 100}
+        // disabled={uploadProgress > 0 && uploadProgress < 100}
       >
         Create Fragment
       </Button>
