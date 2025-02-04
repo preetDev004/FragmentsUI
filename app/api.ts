@@ -1,18 +1,16 @@
 import { FragmentType } from "@/utils/types";
-import { User } from "@/utils/user";
-
-
+import { User } from "@/utils/types";
 
 /**
  * Fetch all fragments for the authenticated user from the fragments microservice.
  * @param user - The authenticated user with an `idToken` attached.
  * @returns The user's fragments data or undefined if the request fails.
  */
-export async function getUserFragments(user: User) {
+export async function fetchUserFragments(user: User) {
   console.log('Requesting user fragments data...');
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
-      headers: user.authorizationHeaders(),
+      headers: {"Authorization" : `Bearer ${user.idToken}`, "Content-Type" : user.contentType} as HeadersInit
     });
 
     if (!res.ok) {
@@ -49,7 +47,7 @@ export const addUserFragment = async ({
   const response  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
     method: "POST",
     body: formData,
-    headers: user.authorizationHeaders(),
+    headers: {"Authorization" : `Bearer ${user.idToken}`, "Content-Type" : user.contentType} as HeadersInit,
   });
   if (!response.ok) {
     throw new Error(response.statusText);
