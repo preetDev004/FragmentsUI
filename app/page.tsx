@@ -11,20 +11,12 @@ import {
   Database,
   FileText,
   Gauge,
-  Image,
+  Image as Img,
   Lock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "react-oidc-context";
 
-export const signOutRedirect = () => {
-  const clientId = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID!;
-  const logoutUri = process.env.NEXT_PUBLIC_OAUTH_SIGN_OUT_REDIRECT_URL!;
-  const cognitoDomain = process.env.NEXT_PUBLIC_AWS_COGNITO_HOSTED_UI_DOMAIN;
-  window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
-    logoutUri
-  )}`;
-};
 export default function Home() {
   const auth = useAuth();
   const router = useRouter();
@@ -111,7 +103,7 @@ export default function Home() {
                 description="Handle various text formats including JSON, CSV, Markdown, and plain text with ease."
               />
               <FeatureCard
-                icon={<Image className="w-10 h-10 text-orange-500" />}
+                icon={<Img className="w-10 h-10 text-orange-500" />}
                 title="Image Processing"
                 description="Store and process images from automated assembly line cameras and quality control systems."
               />

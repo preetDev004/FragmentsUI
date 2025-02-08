@@ -1,30 +1,30 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useAuth } from "react-oidc-context";
-import { useQuery } from "@tanstack/react-query";
 
-import ProtectedRoute from "@/components/ProtectedRoute";
 import { CreateFragmentDialog } from "@/components/CreateFragmentDailog";
+import { FragmentContent } from "@/components/FragmentContent";
+import { FragmentIDS } from "@/components/FragmentIDS";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useCleanUrlParams } from "@/hooks/useCleanUrlParams";
 import { fragmentApi } from "@/lib/fragments";
 import { authUtils } from "@/utils/auth";
-import { useCleanUrlParams } from "@/hooks/useCleanUrlParams";
-import { DashboardContent } from "@/components/DashboardContent";
 
 const DashboardPage = () => {
   const auth = useAuth();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data } = useQuery({
-    queryKey: ['fragments'],
+    queryKey: ["fragments"],
     queryFn: () => {
       if (!auth.isAuthenticated || !auth.user) return null;
       return fragmentApi.getUserFragments(authUtils.getUser(auth.user));
     },
-    enabled: auth.isAuthenticated
+    enabled: auth.isAuthenticated,
   });
-
   useCleanUrlParams(auth.isAuthenticated);
 
   return (
@@ -49,7 +49,11 @@ const DashboardPage = () => {
                 />
               </div>
 
-              <DashboardContent data={data} />
+              {data && typeof data.fragments[0] === "string" ? (
+                <FragmentIDS data={data} />
+              ) : (
+                <FragmentContent data={data} />
+              )}
             </motion.div>
           </div>
         </main>

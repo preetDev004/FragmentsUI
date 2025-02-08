@@ -28,3 +28,7 @@ export type FragmentsResponse = {
   status: string;
   fragments: Fragment[];
 };
+export type FragmentsIDsResponse = {
+  status: string;
+  fragments: string[];
+};

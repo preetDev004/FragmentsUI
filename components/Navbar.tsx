@@ -1,11 +1,20 @@
 "use client";
 
-import { signOutRedirect } from "@/app/page";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { AuthContextProps, useAuth } from "react-oidc-context";
+
+const signOutRedirect = () => {
+  const clientId = process.env.NEXT_PUBLIC_AWS_COGNITO_CLIENT_ID!;
+  const logoutUri = process.env.NEXT_PUBLIC_OAUTH_SIGN_OUT_REDIRECT_URL!;
+  const cognitoDomain = process.env.NEXT_PUBLIC_AWS_COGNITO_HOSTED_UI_DOMAIN;
+  window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+    logoutUri
+  )}`;
+};
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,11 +47,11 @@ export function Navbar() {
     <nav className="sticky top-0 w-full z-50 bg-black/80 backdrop-blur-sm border-b border-orange-900/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex-shrink-0">
+          <Link href={'/'} className="flex-shrink-0">
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
               FSS
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">

@@ -1,28 +1,17 @@
-// src/components/fragments/DashboardContent.tsx
+
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
-import type { FragmentType } from "@/utils/types";
+import type { FragmentsResponse } from "@/utils/types";
 
-interface ApiResponse {
-  status: string;
-  fragments: Array<{
-    id: string;
-    ownerId: string;
-    created: string;
-    updated: string;
-    type: FragmentType;
-    content: string;
-  }>;
-}
 
-export const DashboardContent = ({ data }: { data?: ApiResponse }) => {
+export const FragmentContent = ({ data }: { data?: FragmentsResponse}) => {
   if (!data || data.status !== 'ok' || !data.fragments?.length) {
     return (
       <Card className="p-6 bg-black/40 border-orange-900/50">
         <p className="text-gray-400">Your fragments will appear here.</p>
       </Card>
     );
-  }
+  } 
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -34,7 +23,7 @@ export const DashboardContent = ({ data }: { data?: ApiResponse }) => {
 };
 
 const FragmentCard = ({ fragment }: { 
-  fragment: ApiResponse['fragments'][number] 
+  fragment: FragmentsResponse['fragments'][number] 
 }) => {
   const renderContent = () => {
     try {
