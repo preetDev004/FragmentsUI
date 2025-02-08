@@ -47,7 +47,7 @@ const FragmentTypeGroup = ({
   selectedType: FragmentType;
 }) => (
   <div className="p-2 transition-all duration-300">
-    <div className="text-orange-500 flex items-center gap-2 mb-2">
+    <div className="text-orange-400 flex items-center gap-2 mb-2">
       {icon} {label}
     </div>
     {types.map((type) => (
@@ -56,9 +56,9 @@ const FragmentTypeGroup = ({
         value={type}
         className={`${
           type === selectedType
-            ? "text-orange-500 underline underline-offset-4"
+            ? "text-orange-300 underline underline-offset-4"
             : "text-gray-300"
-        } hover:text-orange-500 hover:bg-orange-950/30 cursor-pointer`}
+        } hover:text-orange-300 hover:bg-orange-950/30 cursor-pointer`}
       >
         {type}
       </SelectItem>

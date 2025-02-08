@@ -40,7 +40,7 @@ export const CreateFragmentForm = ({
       });
       setContent("");
       clearFile();
-      queryClient.invalidateQueries({ queryKey: ['fragments'] });
+      queryClient.invalidateQueries({ queryKey: ["fragments"] });
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -54,7 +54,11 @@ export const CreateFragmentForm = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const validationError = validateFragmentContent(selectedType, content, file);
+    const validationError = validateFragmentContent(
+      selectedType,
+      content,
+      file
+    );
     if (validationError) {
       setError(validationError);
       return;
@@ -63,7 +67,12 @@ export const CreateFragmentForm = ({
     mutation.mutate({ type: selectedType, content, file, user });
   };
 
-  const isTextType = ["text/plain", "text/markdown", "text/html", "application/json"].includes(selectedType);
+  const isTextType = [
+    "text/plain",
+    "text/markdown",
+    "text/html",
+    "application/json",
+  ].includes(selectedType);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 w-full">
@@ -74,7 +83,7 @@ export const CreateFragmentForm = ({
       >
         <FragmentTypeSelect
           selectedType={selectedType}
-          onTypeChange={(type : FragmentType) => {
+          onTypeChange={(type: FragmentType) => {
             setSelectedType(type);
             clearFile();
             setContent("");
@@ -87,7 +96,7 @@ export const CreateFragmentForm = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2, delay: 0.1 }}
       >
-        <div className="space-y-1">
+        <div className="space-y-2">
           <label className="text-sm font-medium text-white">Content</label>
           {isTextType ? (
             <TextContentInput
@@ -101,21 +110,23 @@ export const CreateFragmentForm = ({
               file={file}
               isDragging={isDragging}
               handleDrag={handleDrag}
-              handleFileSelection={(file : File) => handleFileSelection(file, selectedType)}
+              handleFileSelection={(file: File) =>
+                handleFileSelection(file, selectedType)
+              }
               clearFile={clearFile}
             />
           )}
         </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, delay: 0.2 }}
+        >
+          {error && <FormError message={error} />}
+        </motion.div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2, delay: 0.2 }}
-      >
-        {error && <FormError message={error} />}
-        <SubmitButton isLoading={mutation.isPending} />
-      </motion.div>
+      <SubmitButton isLoading={mutation.isPending} />
     </form>
   );
 };
