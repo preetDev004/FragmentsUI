@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { motion } from "framer-motion";
-import { FragmentTypeSelect } from "@/components/FragmentTypeSelect";
-import { TextContentInput } from "@/components/TextContentInput";
 import { FileUploadArea } from "@/components/FileUploadArea";
 import { FormError } from "@/components/FormError";
+import { FragmentTypeSelect } from "@/components/FragmentTypeSelect";
 import { SubmitButton } from "@/components/SubmitButton";
-import { validateFragmentContent } from "@/utils/validation";
+import { TextContentInput } from "@/components/TextContentInput";
+import { useToast } from "@/hooks/use-toast";
+import { useDragHandling } from "@/hooks/utils/useDragHandling";
+import { useFileHandling } from "@/hooks/utils/useFileHandling";
 import { fragmentApi } from "@/lib/fragments";
 import type { FragmentType, User } from "@/utils/types";
-import { useToast } from "@/hooks/use-toast";
-import { useFileHandling } from "@/hooks/utils/useFileHandling";
-import { useDragHandling } from "@/hooks/utils/useDragHandling";
+import { validateFragmentContent } from "@/utils/validation";
+import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
+import { useState } from "react";
 import { queryClient } from "./QueryProvider";
 
 export const CreateFragmentForm = ({
@@ -71,6 +71,7 @@ export const CreateFragmentForm = ({
     "text/plain",
     "text/markdown",
     "text/html",
+    "text/csv",
     "application/json",
   ].includes(selectedType);
 

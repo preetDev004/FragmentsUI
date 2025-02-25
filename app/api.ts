@@ -46,7 +46,7 @@ export const addUserFragment = async ({
 
   const response  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
     method: "POST",
-    body: formData,
+    body: content,
     headers: {"Authorization" : `Bearer ${user.idToken}`, "Content-Type" : user.contentType} as HeadersInit,
   });
   if (!response.ok) {
