@@ -1,12 +1,13 @@
 // src/utils/validation.ts
 import { FragmentType, FileWithPreview } from "@/utils/types";
+import Papa from 'papaparse';
 
-export const validateFragmentContent = (
+export const validateFragmentContent = async (
   type: FragmentType,
   content: string,
   file: FileWithPreview | null
-): string => {
-  if (!content.trim() && !file) return "Content cannot be empty";
+): Promise<string> => {
+  if (!file && !content.trim()) return "Content cannot be empty";
 
   // Validate based on fragment type
   switch (type) {
@@ -34,6 +35,15 @@ export const validateFragmentContent = (
         return "Invalid Markdown format";
       }
       break;
+    
+      case "text/csv":
+        if (file) {
+          const result = await isCSV(file);
+          if (!result.isValid) {
+            return "Invalid CSV format";
+          }
+        }
+        break;
     
     default:
       return "Some Invalid Format"
@@ -176,3 +186,62 @@ const isMarkdown = (text : string) => {
   // Return true if any Markdown feature is present
   return featureCount > 0;
 }
+
+// Modify the isCSV function to return parsed content and validation status
+const isCSV = (file: FileWithPreview): Promise<{isValid: boolean}> => {
+  // First, check if the file has a CSV MIME type and extension
+  if (file.type !== 'text/csv') {
+    return Promise.resolve({isValid: false});
+  }
+  
+  const fileExtension = file.name.split('.').pop()?.toLowerCase();
+  if (fileExtension !== 'csv') {
+    return Promise.resolve({isValid: false});
+  }
+
+  // Next, try to parse the content using PapaParse
+  return new Promise((resolve) => {
+    // Create a file reader to read the file content
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      
+      // Try parsing with PapaParse
+      Papa.parse(content, {
+        header: true, // This will parse the first row as headers
+        skipEmptyLines: true,
+        
+        // Complete callback - called when parsing is finished
+        complete: (results) => {
+          console.log('Parsed CSV content:', results.data);
+          
+          // Check if PapaParse encountered errors or if data looks valid
+          if (results.errors.length > 0) {
+            // File couldn't be parsed properly
+            resolve({isValid: false});
+          } else if (results.data.length === 0) {
+            // No data rows found
+            resolve({isValid: false});
+          } else {
+            // Successfully parsed as CSV
+            resolve({isValid: true});
+          }
+        },
+        
+        // Error callback - if parsing fails catastrophically
+        error: () => {
+          resolve({isValid: false});
+        }
+      });
+    };
+    
+    // Error handling for file reading failures
+    reader.onerror = () => {
+      resolve({isValid: false});
+    };
+    
+    // Start reading the file as text
+    reader.readAsText(file);
+  });
+};

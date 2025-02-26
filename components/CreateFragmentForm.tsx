@@ -52,26 +52,34 @@ export const CreateFragmentForm = ({
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const validationError = validateFragmentContent(
-      selectedType,
-      content,
-      file
-    );
-    if (validationError) {
-      setError(validationError);
-      return;
+    console.log(selectedType, content, file);
+    
+    try {
+      // We need to await the validation result since it's now a Promise
+      const validationMsg = await validateFragmentContent(
+        selectedType,
+        content,
+        file
+      );
+      if (validationMsg) {
+        setError(validationMsg);
+        return;
+      }
+      setError("");
+      mutation.mutate({ type: selectedType, content, file, user });
+    } catch (err) {
+      // Handle any unexpected errors during validation
+      console.error("Validation error:", err);
+      setError("An unexpected error occurred during validation");
     }
-    setError("");
-    mutation.mutate({ type: selectedType, content, file, user });
   };
 
   const isTextType = [
     "text/plain",
     "text/markdown",
     "text/html",
-    "text/csv",
     "application/json",
   ].includes(selectedType);
 
