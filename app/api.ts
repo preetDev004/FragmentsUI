@@ -9,7 +9,7 @@ import { User } from "@/utils/types";
 export async function fetchUserFragments(user: User) {
   console.log('Requesting user fragments data...');
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments?expand=1`, {
       headers: {"Authorization" : `Bearer ${user.idToken}`, "Content-Type" : user.contentType} as HeadersInit
     });
 

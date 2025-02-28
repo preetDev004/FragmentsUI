@@ -16,7 +16,7 @@ export const CreateFragmentDialog = ({
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
     <DialogTrigger asChild>
       <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => onOpenChange(true)}>
-        <Plus className="mr-2 h-4 w-4" /> Add Fragment
+        <Plus className="sm:mr-2 h-4 w-4" /> <span className="hidden sm:block">Add Fragment</span>
       </Button>
     </DialogTrigger>
     <DialogContent className="bg-black/95 border-orange-900/50 text-white flex flex-col items-start justify-center">

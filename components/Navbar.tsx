@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { AuthContextProps, useAuth } from "react-oidc-context";
@@ -67,9 +67,9 @@ export function Navbar() {
             {auth.isAuthenticated ? (
               <Button
                 onClick={() => signOut(auth)}
-                className="bg-orange-500 hover:bg-orange-600 hover:underline hover:underline-offset-2"
+                className="bg-orange-900/30 border border-orange-500/20 hover:bg-orange-900/40 text-orange-400 hover:underline hover:underline-offset-2"
               >
-                <span>Log Out</span>
+                <span className="flex items-center justify-between gap-2">Log Out<LogOut className="w-5 h-5" /> </span>
               </Button>
             ) : (
               <Button
@@ -117,7 +117,7 @@ export function Navbar() {
                 {auth.isAuthenticated ? (
                   <Button
                     onClick={() => signOut(auth)}
-                    className="w-full bg-orange-500 hover:bg-orange-600"
+                    className="w-full bg-orange-900/20 hover:bg-orange-600"
                   >
                     Log Out
                   </Button>
