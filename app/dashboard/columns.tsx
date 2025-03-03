@@ -11,14 +11,12 @@ import {
 import { Fragment } from "@/utils/types";
 import { ColumnDef } from "@tanstack/react-table";
 import {
-  ArrowDown,
   ArrowDownUp,
-  ArrowUp,
   ArrowUpDown,
   Copy,
   Map,
   MoreVertical,
-  Trash2,
+  Trash2
 } from "lucide-react";
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.

@@ -22,7 +22,7 @@ export function Navbar() {
 
   const signIn = async (auth: AuthContextProps) => {
     try {
-      await auth.signinRedirect()
+      await auth.signinRedirect();
     } catch (error) {
       console.error(error);
     }
@@ -47,7 +47,7 @@ export function Navbar() {
     <nav className="sticky top-0 w-full z-50 bg-black/80 backdrop-blur-sm border-b border-orange-900/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href={'/'} className="flex-shrink-0">
+          <Link href={"/"} className="flex-shrink-0">
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
               FSS
             </span>
@@ -69,7 +69,10 @@ export function Navbar() {
                 onClick={() => signOut(auth)}
                 className="bg-orange-900/30 border border-orange-500/20 hover:bg-orange-900/40 text-orange-400 hover:underline hover:underline-offset-2"
               >
-                <span className="flex items-center justify-between gap-2">Log Out<LogOut className="w-5 h-5" /> </span>
+                <span className="flex items-center justify-between gap-2">
+                  Log Out
+                  <LogOut className="w-5 h-5" />{" "}
+                </span>
               </Button>
             ) : (
               <Button
@@ -117,9 +120,12 @@ export function Navbar() {
                 {auth.isAuthenticated ? (
                   <Button
                     onClick={() => signOut(auth)}
-                    className="w-full bg-orange-900/20 hover:bg-orange-600"
+                    className="w-full bg-orange-900/30 border border-orange-500/20 hover:bg-orange-900/40 text-orange-400 hover:underline hover:underline-offset-2"
                   >
-                    Log Out
+                    <span className="flex items-center justify-between gap-2">
+                      Log Out
+                      <LogOut className="w-5 h-5" />{" "}
+                    </span>
                   </Button>
                 ) : (
                   <Button

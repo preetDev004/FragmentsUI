@@ -38,7 +38,7 @@ const DashboardPage = () => {
                 <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
                   Dashboard
                 </h1>
-                <p className="text-sm sm:text-base text-muted-foreground">Find all your data fragments at one place!</p>
+                <p className="text-sm sm:text-base text-gray-300">Find all your data fragments at one place!</p>
               </div>
               
 
