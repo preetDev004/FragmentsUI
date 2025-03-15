@@ -7,7 +7,7 @@ import {
   getPaginationRowModel,
   useReactTable,
   SortingState,
-  getSortedRowModel
+  getSortedRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -23,17 +23,21 @@ import { DataTablePagination } from "@/components/ui/DataTablePagination";
 import { CreateFragmentDialog } from "@/components/CreateFragmentDailog";
 import { useAuth } from "react-oidc-context";
 import { authUtils } from "@/utils/auth";
+import { FragmentDetailsDialog } from "@/components/FragmentDetails";
+import { Fragment } from "@/utils/types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends Fragment, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedFragment, setSelectedFragment] = useState<Fragment | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const auth = useAuth();
   const table = useReactTable({
@@ -53,7 +57,6 @@ export function DataTable<TData, TValue>({
       sorting, // Add this
     },
   });
-
 
   return (
     <>
@@ -95,6 +98,10 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  onClick={() => {
+                    setSelectedFragment(row.original);
+                    setIsModalOpen(true);
+                  }}
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -121,6 +128,14 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <DataTablePagination table={table} />
+      {selectedFragment && (
+        <FragmentDetailsDialog
+          isOpen={isModalOpen}
+          fragment={selectedFragment}
+          onOpenChange={setIsModalOpen}
+          user={authUtils.getUser(auth.user!)}
+        />
+      )}
     </>
   );
 }

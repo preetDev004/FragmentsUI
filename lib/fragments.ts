@@ -1,12 +1,17 @@
 // src/api/fragments.ts
 import { FileWithPreview, FragmentType } from "@/utils/types";
 import { User } from "@/utils/types";
-import { addUserFragment, fetchUserFragments } from "@/app/api";
+import { addUserFragment, fetchUserFragments, fetchFragmentById } from "@/app/api";
 
 export const fragmentApi = {
   getUserFragments: async (user: User) => {
     const fragments = await fetchUserFragments(user);
     return fragments || null;
+  },
+
+  getUserFragData : async (user: User, id: string) => {
+    const fragData = await fetchFragmentById(user, id);
+    return fragData || null;
   },
 
   createFragment: async ({

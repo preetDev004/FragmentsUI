@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Fragment } from "@/utils/types";
 import { ColumnDef } from "@tanstack/react-table";
+import { formatDistanceToNow } from "date-fns";
 import {
   ArrowDownUp,
   ArrowUpDown,
@@ -86,31 +87,12 @@ export const columns: ColumnDef<Fragment>[] = [
     ),
     cell: ({ row }) => {
       const dateString = row.getValue("created") as string;
-      const date = new Date(dateString);
-
-      // Format the date
-      const month = date.toLocaleString("en-US", { month: "short" });
-      const day = date.getDate();
-      const year = date.getFullYear();
-
-      // Add ordinal suffix to day
-      const ordinalSuffix = (day: number) => {
-        if (day > 3 && day < 21) return "th";
-        switch (day % 10) {
-          case 1:
-            return "st";
-          case 2:
-            return "nd";
-          case 3:
-            return "rd";
-          default:
-            return "th";
-        }
-      };
-
-      const formattedDate = `${month} ${day}${ordinalSuffix(day)}, ${year}`;
-
-      return <p className="hidden md:block">{formattedDate}</p>;
+      
+        const createdDate = dateString ? new Date(dateString) : null;
+        const timeAgo = createdDate
+          ? formatDistanceToNow(createdDate, { addSuffix: true })
+          : null;
+      return <p className="hidden md:block">{timeAgo}</p>;
     },
     sortingFn: "datetime",
   },
