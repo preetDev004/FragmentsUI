@@ -4,11 +4,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast"; // Add this import at the top
 import { fragmentApi } from "@/lib/fragments";
 import { Fragment, User } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns"; // Import format
 import { AlertCircle, Clock, Info, Tag } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 
 export const FragmentDetailsDialog = ({
@@ -23,19 +32,44 @@ export const FragmentDetailsDialog = ({
   user: User;
 }) => {
   const auth = useAuth();
+  const { toast } = useToast(); // Add this hook
+  const [viewFormat, setViewFormat] = useState<"original" | "html">("original");
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["fragments", fragment.id],
-    queryFn: () => {
+  // Replace the two useQuery hooks with a single one
+  const {
+    data: fragmentData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["fragments", fragment.id, viewFormat],
+    queryFn: async () => {
       if (!auth.isAuthenticated || !auth.user) return null;
-      return fragmentApi.getUserFragData(user, fragment.id);
+      const endpoint =
+        viewFormat === "html" ? `${fragment.id}.html` : fragment.id;
+      return fragmentApi.getUserFragData(user, endpoint);
     },
+    enabled: !!auth.isAuthenticated && !!auth.user && isOpen,
   });
 
-  const createdDate = fragment.created ? new Date(fragment.created) : null;
+  // Update the error effect
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load fragment content",
+      });
+    }
+  }, [error, toast]);
 
-  // Format the full date
-  const fullDate = createdDate ? format(createdDate, "d MMM yyyy, h:mm a") : null;
+  useEffect(() => {
+    setViewFormat("original");
+  }, [isOpen]);
+
+  const createdDate = fragment.created ? new Date(fragment.created) : null;
+  const fullDate = createdDate
+    ? format(createdDate, "d MMM yyyy, h:mm a")
+    : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -65,7 +99,7 @@ export const FragmentDetailsDialog = ({
             </div>
 
             {/* Created - Second Row, Right Column */}
-            <div className="col-span-1"> 
+            <div className="col-span-1">
               <div className="flex items-center space-x-3 p-2 rounded-md bg-orange-950/30">
                 <Clock size={18} className="text-orange-400" />
                 <div className="flex flex-col">
@@ -103,6 +137,26 @@ export const FragmentDetailsDialog = ({
             <h3 className="text-orange-300 text-sm uppercase tracking-wider font-semibold">
               Content
             </h3>
+            {fragment.type === "text/markdown" && (
+              <Select
+                value={viewFormat}
+                onValueChange={(value: "original" | "html") =>
+                  setViewFormat(value)
+                }
+              >
+                <SelectTrigger className="w-32 bg-orange-950/30 border-orange-900/30 text-orange-300">
+                  <SelectValue placeholder="View as..." />
+                </SelectTrigger>
+                <SelectContent className="bg-black/95 border-orange-900/50">
+                  <SelectItem value="original" className="text-orange-300">
+                    Original
+                  </SelectItem>
+                  <SelectItem value="html" className="text-orange-300">
+                    HTML
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {isLoading ? (
@@ -125,7 +179,7 @@ export const FragmentDetailsDialog = ({
             <div className="flex-1 w-full bg-black border border-orange-900/30 p-4 rounded-md max-h-80 overflow-auto font-mono text-sm whitespace-pre-wrap text-orange-100/90 relative">
               <div className="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-black to-transparent pointer-events-none"></div>
               <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
-              {data || "No content available"}
+              {fragmentData || "No content available"}
             </div>
           )}
         </div>

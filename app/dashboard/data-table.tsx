@@ -2,14 +2,16 @@
 
 import {
   ColumnDef,
+  SortingState,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
-  useReactTable,
-  SortingState,
   getSortedRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
 
+import { CreateFragmentDialog } from "@/components/CreateFragmentDailog";
+import { DataTablePagination } from "@/components/ui/DataTablePagination";
 import {
   Table,
   TableBody,
@@ -18,13 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React, { useState } from "react";
-import { DataTablePagination } from "@/components/ui/DataTablePagination";
-import { CreateFragmentDialog } from "@/components/CreateFragmentDailog";
-import { useAuth } from "react-oidc-context";
 import { authUtils } from "@/utils/auth";
-import { FragmentDetailsDialog } from "@/components/FragmentDetails";
 import { Fragment } from "@/utils/types";
+import { useState } from "react";
+import { useAuth } from "react-oidc-context";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -36,8 +35,6 @@ export function DataTable<TData extends Fragment, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedFragment, setSelectedFragment] = useState<Fragment | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
   const auth = useAuth();
   const table = useReactTable({
@@ -98,10 +95,6 @@ export function DataTable<TData extends Fragment, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  onClick={() => {
-                    setSelectedFragment(row.original);
-                    setIsModalOpen(true);
-                  }}
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -128,14 +121,6 @@ export function DataTable<TData extends Fragment, TValue>({
         </Table>
       </div>
       <DataTablePagination table={table} />
-      {selectedFragment && (
-        <FragmentDetailsDialog
-          isOpen={isModalOpen}
-          fragment={selectedFragment}
-          onOpenChange={setIsModalOpen}
-          user={authUtils.getUser(auth.user!)}
-        />
-      )}
     </>
   );
 }
