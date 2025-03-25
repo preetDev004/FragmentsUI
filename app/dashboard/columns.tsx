@@ -23,6 +23,10 @@ import {
 import { useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { Badge } from "@/components/ui/badge";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/components/QueryProvider";
+import { toast } from "@/hooks/use-toast";
+import { fragmentsApi } from "../api";
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
@@ -31,7 +35,7 @@ export const columns: ColumnDef<Fragment>[] = [
     id: "select",
     header: ({ table }) => (
       <Checkbox
-      className="ml-4"
+        className="ml-4"
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && "indeterminate")
@@ -42,7 +46,7 @@ export const columns: ColumnDef<Fragment>[] = [
     ),
     cell: ({ row }) => (
       <Checkbox
-      className="ml-4"
+        className="ml-4"
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
@@ -158,6 +162,61 @@ const FragmentActionsMenu = ({ fragment }: { fragment: Fragment }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const auth = useAuth();
+  // Create a mutation for deleting a fragment
+  const deleteFragmentMutation = useMutation({
+    mutationKey: ["deleteFragment"],
+    mutationFn: async (id: string) => {
+      return fragmentsApi.deleteUserFragment(authUtils.getUser(auth.user!), id);
+    },
+    // Optimistic update: immediately remove the fragment from the cache
+    onMutate: async (id: string) => {
+      // Cancel any outgoing refetches for fragments
+      await queryClient.cancelQueries({
+        queryKey: ['fragments']
+      });
+
+      // Snapshot the previous fragments
+      const previousFragments = queryClient.getQueryData(['fragments']);
+
+      // Optimistically remove the fragment
+      queryClient.setQueryData(['fragments'], (old: unknown) => {
+        // Check if old is an array
+        if (Array.isArray(old)) {
+          return old.filter(f => f.id !== id);
+        }
+        
+        // If not an array, return an empty array or the original data
+        console.warn('Fragments data is not an array:', old);
+        return old || [];
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousFragments };
+    },
+    // If the mutation fails, roll back to the previous state
+    onError: (err, id, context) => {
+      queryClient.setQueryData(["fragments"], context?.previousFragments);
+
+      // Show error toast
+      toast({
+        title: "Error",
+        description: `Failed to delete fragment, ${err.message}`,
+        variant: "destructive",
+      });
+    },
+    // Always refetch after error or success
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["fragments"] });
+    },
+    // Success handler
+    onSuccess: () => {
+      toast({
+        title: "Deleted!",
+        description: "Fragment deleted successfully",
+        variant: "success",
+      });
+    },
+  });
 
   return (
     <>
@@ -182,8 +241,13 @@ const FragmentActionsMenu = ({ fragment }: { fragment: Fragment }) => {
             <Map /> Details
           </DropdownMenuItem>
           <DropdownMenuItem
-            onClick={() => console.log("Delete", fragment.id)}
+            onClick={() => {
+              deleteFragmentMutation.mutate(fragment.id);
+              // Close the dropdown
+              setIsOpen(false);
+            }}
             className="cursor-pointer text-red-500 hover:bg-red-700/20"
+            disabled={deleteFragmentMutation.isPending}
           >
             <Trash2 /> Delete
           </DropdownMenuItem>

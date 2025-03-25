@@ -1,11 +1,11 @@
-import { FragmentType, User } from "@/utils/types";
+import { FileWithPreview, FragmentType, User } from "@/utils/types";
 
 /**
  * Fetch all fragments for the authenticated user from the fragments microservice.
  * @param user - The authenticated user with an `idToken` attached.
  * @returns The user's fragments data or undefined if the request fails.
  */
-export async function fetchUserFragments(user: User) {
+const fetchUserFragments = async(user: User) =>{
   console.log("Requesting user fragments data...");
   try {
     const res = await fetch(
@@ -30,10 +30,7 @@ export async function fetchUserFragments(user: User) {
   }
 }
 
-export const fetchFragmentById = async (
-  user: User,
-  id: string
-) => {
+const fetchFragmentById = async (user: User, id: string) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`,
     {
@@ -45,14 +42,14 @@ export const fetchFragmentById = async (
   if (!response.ok) {
     throw new Error("Failed to fetch fragment details");
   }
-  const contentType = response.headers.get('Content-Type');
-    if(!contentType) {
-      throw new Error("Failed to fetch fragment details");
-    }
-    return response.text();
+  const contentType = response.headers.get("Content-Type");
+  if (!contentType) {
+    throw new Error("Failed to fetch fragment details");
+  }
+  return response.text();
 };
 
-export const addUserFragment = async ({
+const addUserFragment = async ({
   type,
   content,
   file,
@@ -60,7 +57,7 @@ export const addUserFragment = async ({
 }: {
   type: FragmentType;
   content: string;
-  file: File | null;
+  file: FileWithPreview | null;
   user: User;
 }): Promise<unknown> => {
   const formData = new FormData();
@@ -88,3 +85,20 @@ export const addUserFragment = async ({
 
   return await response.json();
 };
+const deleteUserFragment = async (user: User, id: string) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${user.idToken}`,
+      } as HeadersInit,
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to delete fragment details");
+  }
+  return;
+};
+
+export const fragmentsApi = { fetchUserFragments, fetchFragmentById, addUserFragment, deleteUserFragment };

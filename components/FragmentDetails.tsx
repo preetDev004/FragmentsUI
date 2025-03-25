@@ -1,3 +1,4 @@
+import { fragmentsApi } from "@/app/api";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast"; // Add this import at the top
-import { fragmentApi } from "@/lib/fragments";
 import { Fragment, User } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns"; // Import format
@@ -42,11 +42,14 @@ export const FragmentDetailsDialog = ({
     error,
   } = useQuery({
     queryKey: ["fragments", fragment.id, viewFormat],
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     queryFn: async () => {
       if (!auth.isAuthenticated || !auth.user) return null;
       const endpoint =
         viewFormat === "html" ? `${fragment.id}.html` : fragment.id;
-      return fragmentApi.getUserFragData(user, endpoint);
+      return fragmentsApi.fetchFragmentById(user, endpoint);
     },
     enabled: !!auth.isAuthenticated && !!auth.user && isOpen,
   });

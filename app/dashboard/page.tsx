@@ -7,8 +7,8 @@ import { useAuth } from "react-oidc-context";
 import FragmentTable from "@/components/FragmentTable";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useCleanUrlParams } from "@/hooks/useCleanUrlParams";
-import { fragmentApi } from "@/lib/fragments";
 import { authUtils } from "@/utils/auth";
+import { fragmentsApi } from "../api";
 
 const DashboardPage = () => {
   
@@ -18,7 +18,7 @@ const DashboardPage = () => {
     queryKey: ["fragments"],
     queryFn: () => {
       if (!auth.isAuthenticated || !auth.user) return null;
-      return fragmentApi.getUserFragments(authUtils.getUser(auth.user));
+      return fragmentsApi.fetchUserFragments(authUtils.getUser(auth.user));
     },
     enabled: auth.isAuthenticated,
   });

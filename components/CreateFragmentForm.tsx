@@ -8,13 +8,13 @@ import { TextContentInput } from "@/components/TextContentInput";
 import { useToast } from "@/hooks/use-toast";
 import { useDragHandling } from "@/hooks/utils/useDragHandling";
 import { useFileHandling } from "@/hooks/utils/useFileHandling";
-import { fragmentApi } from "@/lib/fragments";
-import type { FragmentType, User } from "@/utils/types";
+import type { FileWithPreview, FragmentType, User } from "@/utils/types";
 import { validateFragmentContent } from "@/utils/validation";
 import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { queryClient } from "./QueryProvider";
+import { fragmentsApi } from "@/app/api";
 
 export const CreateFragmentForm = ({
   onOpenChange,
@@ -31,7 +31,23 @@ export const CreateFragmentForm = ({
   const { isDragging, handleDrag } = useDragHandling();
 
   const mutation = useMutation({
-    mutationFn: fragmentApi.createFragment,
+    mutationFn: async ({
+      type: selectedType,
+      content,
+      file,
+      user,
+    }: {
+      type: FragmentType;
+      content: string;
+      file: FileWithPreview | null;
+      user: User;
+    }) =>
+      await fragmentsApi.addUserFragment({
+        type: selectedType,
+        content,
+        file,
+        user: { ...user, contentType: selectedType },
+      }),
     onSuccess: () => {
       toast({
         title: "Fragment Created Successfully!",
@@ -55,7 +71,7 @@ export const CreateFragmentForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log(selectedType, content, file);
-    
+
     try {
       // We need to await the validation result since it's now a Promise
       const validationMsg = await validateFragmentContent(

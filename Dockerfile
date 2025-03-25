@@ -88,7 +88,7 @@ RUN chmod -R 755 /app && \
 USER nextjs
 
 # Set port and hostname
-EXPOSE 3000
+EXPOSE ${PORT}
 
 # Use Tini as PID 1 for proper signal handling and zombie process reaping
 ENTRYPOINT ["/sbin/tini", "--"]
