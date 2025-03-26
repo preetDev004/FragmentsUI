@@ -11,14 +11,15 @@ import { authUtils } from "@/utils/auth";
 import { fragmentsApi } from "../api";
 
 const DashboardPage = () => {
-  
   const auth = useAuth();
 
   const { data } = useQuery({
     queryKey: ["fragments"],
-    queryFn: () => {
+    queryFn: async () => {
       if (!auth.isAuthenticated || !auth.user) return null;
-      return fragmentsApi.fetchUserFragments(authUtils.getUser(auth.user));
+      return (await fragmentsApi.fetchUserFragments(
+        authUtils.getUser(auth.user))
+      );
     },
     enabled: auth.isAuthenticated,
   });
@@ -38,12 +39,12 @@ const DashboardPage = () => {
                 <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-orange-300">
                   Dashboard
                 </h1>
-                <p className="text-sm sm:text-base text-gray-300">Find all your data fragments at one place!</p>
+                <p className="text-sm sm:text-base text-gray-300">
+                  Find all your data fragments at one place!
+                </p>
               </div>
-              
 
-              <FragmentTable data={data ? data.fragments : []}/>
-
+              <FragmentTable data={data ? data.fragments : []} />
             </motion.div>
           </div>
         </main>

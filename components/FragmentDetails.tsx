@@ -12,13 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast"; // Add this import at the top
+import { useToast } from "@/hooks/use-toast";
 import { Fragment, User } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns"; // Import format
+import { format } from "date-fns";
 import { AlertCircle, Clock, Info, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
+import QuickLRU from "quick-lru";
+
+// Use QuickLRU with a max size limit to prevent unbounded memory growth
+const fragmentContentCache = new QuickLRU<string, { content: string; timestamp: number }>({
+  maxSize: 100, // Adjust this value based on expected usage
+});
 
 export const FragmentDetailsDialog = ({
   isOpen,
@@ -32,10 +38,14 @@ export const FragmentDetailsDialog = ({
   user: User;
 }) => {
   const auth = useAuth();
-  const { toast } = useToast(); // Add this hook
+  const { toast } = useToast();
   const [viewFormat, setViewFormat] = useState<"original" | "html">("original");
 
-  // Replace the two useQuery hooks with a single one
+  // Generate a cache key that includes the fragment ID and specific format
+  const getCacheKey = (fragmentId: string, format: string) =>
+    `${fragmentId}-${format}`;
+
+  // Single query to fetch fragment content
   const {
     data: fragmentData,
     isLoading,
@@ -47,14 +57,55 @@ export const FragmentDetailsDialog = ({
     refetchOnReconnect: false,
     queryFn: async () => {
       if (!auth.isAuthenticated || !auth.user) return null;
+
+      // Determine the correct endpoint and cache key based on view format
       const endpoint =
-        viewFormat === "html" ? `${fragment.id}.html` : fragment.id;
-      return fragmentsApi.fetchFragmentById(user, endpoint);
+        viewFormat === "html" && fragment.type === "text/markdown"
+          ? `${fragment.id}.html`
+          : fragment.id;
+      const cacheKey = getCacheKey(fragment.id, viewFormat);
+
+      // Check if content is in cache and not too old
+      const cachedContent = fragmentContentCache.get(cacheKey);
+      if (
+        cachedContent &&
+        Date.now() - cachedContent.timestamp < 30 * 60 * 1000
+      ) {
+        // 30 minutes cache
+        return cachedContent.content;
+      }
+
+      // Fetch content
+      try {
+        const fetchedContent = await fragmentsApi.fetchFragmentById(
+          user,
+          endpoint
+        );
+
+        // Cache the new content
+        fragmentContentCache.set(cacheKey, {
+          content: fetchedContent,
+          timestamp: Date.now(),
+        });
+
+        return fetchedContent;
+      } catch (err) {
+        console.error(err);
+
+        // Cache the error state
+        const errorMessage = "Error loading fragment content";
+        fragmentContentCache.set(cacheKey, {
+          content: errorMessage,
+          timestamp: Date.now(),
+        });
+
+        throw err;
+      }
     },
     enabled: !!auth.isAuthenticated && !!auth.user && isOpen,
   });
 
-  // Update the error effect
+  // Error handling effect
   useEffect(() => {
     if (error) {
       toast({
@@ -65,8 +116,11 @@ export const FragmentDetailsDialog = ({
     }
   }, [error, toast]);
 
+  // Reset view format when dialog opens
   useEffect(() => {
-    setViewFormat("original");
+    if (isOpen) {
+      setViewFormat("original");
+    }
   }, [isOpen]);
 
   const createdDate = fragment.created ? new Date(fragment.created) : null;
@@ -83,7 +137,7 @@ export const FragmentDetailsDialog = ({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Metadata Section with glowing border */}
+        {/* Metadata Section (unchanged) */}
         <div className="mt-4 mb-4 bg-orange-950/10 border border-orange-900/20 rounded-lg overflow-hidden backdrop-blur-sm w-full">
           <div className="grid grid-cols-2 gap-2">
             {/* ID - First Row, Full Width */}

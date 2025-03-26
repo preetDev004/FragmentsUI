@@ -5,7 +5,7 @@ import { FileWithPreview, FragmentType, User } from "@/utils/types";
  * @param user - The authenticated user with an `idToken` attached.
  * @returns The user's fragments data or undefined if the request fails.
  */
-const fetchUserFragments = async(user: User) =>{
+const fetchUserFragments = async (user: User) => {
   console.log("Requesting user fragments data...");
   try {
     const res = await fetch(
@@ -21,14 +21,16 @@ const fetchUserFragments = async(user: User) =>{
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
     }
-
-    const data = await res.json();
-    console.log("Successfully got user fragments data", { data });
-    return data;
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      return null;
+    }
+    return await res.json();
   } catch (err) {
     console.error("Unable to call GET /v1/fragments", { err });
+    throw err;
   }
-}
+};
 
 const fetchFragmentById = async (user: User, id: string) => {
   const response = await fetch(
@@ -101,4 +103,9 @@ const deleteUserFragment = async (user: User, id: string) => {
   return;
 };
 
-export const fragmentsApi = { fetchUserFragments, fetchFragmentById, addUserFragment, deleteUserFragment };
+export const fragmentsApi = {
+  fetchUserFragments,
+  fetchFragmentById,
+  addUserFragment,
+  deleteUserFragment,
+};
