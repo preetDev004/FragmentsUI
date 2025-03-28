@@ -96,7 +96,7 @@ export const CreateFragmentForm = ({
     "text/plain",
     "text/markdown",
     "text/html",
-    'text/csv',
+    // 'text/csv',
     "application/json",
   ].includes(selectedType);
 
