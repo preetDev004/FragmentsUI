@@ -102,10 +102,28 @@ const deleteUserFragment = async (user: User, id: string) => {
   }
   return;
 };
+const deleteUserFragments = async (user: User, ids: string[]) => {
+  const queryString = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments?${queryString}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${user.idToken}`,
+      } as HeadersInit,
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to delete fragments");
+  }
+};
 
 export const fragmentsApi = {
   fetchUserFragments,
   fetchFragmentById,
   addUserFragment,
   deleteUserFragment,
+  deleteUserFragments,
 };

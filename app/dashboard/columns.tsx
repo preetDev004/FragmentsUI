@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authUtils } from "@/utils/auth";
 import { Fragment } from "@/utils/types";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, Table } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowDownUp,
@@ -119,37 +119,7 @@ export const columns: ColumnDef<Fragment>[] = [
         return <div className="w-8 p-2" />;
       }
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="h-8 w-8 p-0 bg-transparent text-gray-300 relative my-2.5">
-              <span className="sr-only">Open menu</span>
-              <MoreVertical className="h-4 w-4" />
-              <Badge className="absolute -top-2 -right-2 h-4 w-4 p-2 flex items-center justify-center bg-orange-600 text-xs hover:bg-orange-600">
-                {selectedCount}
-              </Badge>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-48 p-2 bg-zinc-900 shadow-md border-none text-gray-300"
-          >
-            <DropdownMenuItem
-              onClick={() => {
-                // Handle bulk delete here
-                const selectedIds = table
-                  .getSelectedRowModel()
-                  .rows.map((row) => row.original.id);
-                console.log("Delete selected:", selectedIds);
-              }}
-              className="cursor-pointer text-red-500 hover:bg-red-700/20 flex items-center"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>Delete ({selectedCount}) Selected</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <FragmentsActionHeader table={table} selectedCount={selectedCount} />;
     },
     cell: ({ row }) => {
       const fragment = row.original;
@@ -157,6 +127,71 @@ export const columns: ColumnDef<Fragment>[] = [
     },
   },
 ];
+
+const FragmentsActionHeader = ({ table, selectedCount }: { table: Table<Fragment>, selectedCount: number }) => {
+  const auth = useAuth();
+  // Create a mutation for deleting a fragment
+  const deleteFragmentsMutation = useMutation({
+    mutationKey: ["deleteFragments"],
+    mutationFn: async (ids: string[]) => {
+      return fragmentsApi.deleteUserFragments(authUtils.getUser(auth.user!), ids);
+    },
+
+    // If the mutation fails, roll back to the previous state
+    onError: (err) => {
+      // Show error toast
+      toast({
+        title: "Error",
+        description: `Failed to delete fragment, ${err.message}`,
+        variant: "destructive",
+      });
+    },
+    // Always refetch after error or success
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["fragments"] });
+    },
+    // Success handler
+    onSuccess: () => {
+      toast({
+        title: "Deleted!",
+        description: "Fragment deleted successfully",
+        variant: "success",
+      });
+    },
+  });
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="h-8 w-8 p-0 bg-transparent text-gray-300 relative my-2.5">
+          <span className="sr-only">Open menu</span>
+          <MoreVertical className="h-4 w-4" />
+          <Badge className="absolute -top-2 -right-2 h-4 w-4 p-2 flex items-center justify-center bg-orange-600 text-xs hover:bg-orange-600">
+            {selectedCount}
+          </Badge>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-48 p-2 bg-zinc-900 shadow-md border-none text-gray-300"
+      >
+        <DropdownMenuItem
+        disabled={selectedCount === 0 || deleteFragmentsMutation.isPending}
+          onClick={() => {
+            // Handle bulk delete here
+            const selectedIds = table
+              .getSelectedRowModel()
+              .rows.map((row) => row.original.id);
+            deleteFragmentsMutation.mutate(selectedIds);
+          }}
+          className="cursor-pointer text-red-500 hover:bg-red-700/20 flex items-center"
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          <span>Delete ({selectedCount}) Selected</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const FragmentActionsMenu = ({ fragment }: { fragment: Fragment }) => {
   const [isOpen, setIsOpen] = useState(false);
