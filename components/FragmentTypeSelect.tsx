@@ -1,5 +1,11 @@
 // src/components/fragments/FragmentTypeSelect.tsx
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { VALID_FRAGMENT_GROUPS } from "@/constants";
 import { FileText, Image as Img } from "lucide-react";
 import type { FragmentType } from "@/utils/types";
@@ -55,9 +61,7 @@ const FragmentTypeGroup = ({
         key={type}
         value={type}
         className={`${
-          type === selectedType
-            ? "text-orange-300 underline underline-offset-4"
-            : "text-gray-300"
+          type === selectedType ? "text-orange-300 underline underline-offset-4" : "text-gray-300"
         } hover:text-orange-300 hover:bg-orange-950/30 cursor-pointer`}
       >
         {type}

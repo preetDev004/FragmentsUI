@@ -1,4 +1,3 @@
-// src/hooks/utils/useCleanUrlParams.ts
 import { useEffect } from "react";
 
 export const useCleanUrlParams = (isAuthenticated: boolean) => {

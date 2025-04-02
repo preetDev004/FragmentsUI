@@ -1,10 +1,5 @@
 import { fragmentsApi } from "@/app/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -42,8 +37,7 @@ export const FragmentDetailsDialog = ({
   const [viewFormat, setViewFormat] = useState<"original" | "html">("original");
 
   // Generate a cache key that includes the fragment ID and specific format
-  const getCacheKey = (fragmentId: string, format: string) =>
-    `${fragmentId}-${format}`;
+  const getCacheKey = (fragmentId: string, format: string) => `${fragmentId}-${format}`;
 
   // Single query to fetch fragment content
   const {
@@ -67,20 +61,14 @@ export const FragmentDetailsDialog = ({
 
       // Check if content is in cache and not too old
       const cachedContent = fragmentContentCache.get(cacheKey);
-      if (
-        cachedContent &&
-        Date.now() - cachedContent.timestamp < 30 * 60 * 1000
-      ) {
+      if (cachedContent && Date.now() - cachedContent.timestamp < 30 * 60 * 1000) {
         // 30 minutes cache
         return cachedContent.content;
       }
 
       // Fetch content
       try {
-        const fetchedContent = await fragmentsApi.fetchFragmentById(
-          user,
-          endpoint
-        );
+        const fetchedContent = await fragmentsApi.fetchFragmentById(user, endpoint);
 
         // Cache the new content
         fragmentContentCache.set(cacheKey, {
@@ -124,9 +112,7 @@ export const FragmentDetailsDialog = ({
   }, [isOpen]);
 
   const createdDate = fragment.created ? new Date(fragment.created) : null;
-  const fullDate = createdDate
-    ? format(createdDate, "d MMM yyyy, h:mm a")
-    : null;
+  const fullDate = createdDate ? format(createdDate, "d MMM yyyy, h:mm a") : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -197,9 +183,7 @@ export const FragmentDetailsDialog = ({
             {fragment.type === "text/markdown" && (
               <Select
                 value={viewFormat}
-                onValueChange={(value: "original" | "html") =>
-                  setViewFormat(value)
-                }
+                onValueChange={(value: "original" | "html") => setViewFormat(value)}
               >
                 <SelectTrigger className="w-32 bg-orange-950/30 border-orange-900/30 text-orange-300">
                   <SelectValue placeholder="View as..." />
@@ -223,9 +207,7 @@ export const FragmentDetailsDialog = ({
                 <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce delay-75"></div>
                 <div className="w-3 h-3 bg-orange-400 rounded-full animate-bounce delay-150"></div>
               </div>
-              <div className="text-orange-400/80 text-sm mt-4">
-                Loading content...
-              </div>
+              <div className="text-orange-400/80 text-sm mt-4">Loading content...</div>
             </div>
           ) : error ? (
             <div className="flex-1 bg-red-950/20 border border-red-900/30 p-4 rounded-md flex items-center text-red-300">

@@ -20,9 +20,12 @@ export const useFileHandling = () => {
     setFile(null);
   };
 
-  useEffect(() => () => {
-    if (file?.preview) URL.revokeObjectURL(file.preview);
-  }, [file]);
+  useEffect(
+    () => () => {
+      if (file?.preview) URL.revokeObjectURL(file.preview);
+    },
+    [file]
+  );
 
   return { file, setFile, handleFileSelection, clearFile };
 };

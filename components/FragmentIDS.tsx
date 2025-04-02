@@ -18,7 +18,7 @@ export const FragmentIDS = ({ data }: { data?: FragmentsIDsResponse }) => {
           className="p-4 bg-black/40 border-orange-900/50 hover:border-orange-500/50 transition-colors"
         >
           <div className="mb-2">
-            <p className="text-gray-300">{fragment.slice(0,30)}...</p>
+            <p className="text-gray-300">{fragment.slice(0, 30)}...</p>
           </div>
         </Card>
       ))}

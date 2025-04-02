@@ -13,13 +13,7 @@ import { authUtils } from "@/utils/auth";
 import { Fragment } from "@/utils/types";
 import { ColumnDef, Table } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
-import {
-  ArrowDownUp,
-  ArrowUpDown,
-  Map,
-  MoreVertical,
-  Trash2,
-} from "lucide-react";
+import { ArrowDownUp, ArrowUpDown, Map, MoreVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "react-oidc-context";
 import { Badge } from "@/components/ui/badge";
@@ -37,8 +31,7 @@ export const columns: ColumnDef<Fragment>[] = [
       <Checkbox
         className="ml-4"
         checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
+          table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
@@ -57,16 +50,12 @@ export const columns: ColumnDef<Fragment>[] = [
   },
   {
     accessorKey: "id",
-    header: () => (
-      <p className="font-semibold text-gray-300 my-2.5">Fragment ID</p>
-    ),
+    header: () => <p className="font-semibold text-gray-300 my-2.5">Fragment ID</p>,
     cell: ({ row }) => {
       const id = row.getValue("id") as string;
       return (
         <>
-          <span className="md:hidden">
-            {id.length > 30 ? `${id.substring(0, 20)}...` : id}
-          </span>
+          <span className="md:hidden">{id.length > 30 ? `${id.substring(0, 20)}...` : id}</span>
           <span className="hidden md:block">{id}</span>
         </>
       );
@@ -74,9 +63,7 @@ export const columns: ColumnDef<Fragment>[] = [
   },
   {
     accessorKey: "type",
-    header: () => (
-      <p className="font-semibold text-gray-300 hidden sm:block my-2.5">Type</p>
-    ),
+    header: () => <p className="font-semibold text-gray-300 hidden sm:block my-2.5">Type</p>,
     cell: ({ row }) => {
       return <p className="hidden sm:block">{row.getValue("type")}</p>;
     },
@@ -103,9 +90,7 @@ export const columns: ColumnDef<Fragment>[] = [
       const dateString = row.getValue("created") as string;
 
       const createdDate = dateString ? new Date(dateString) : null;
-      const timeAgo = createdDate
-        ? formatDistanceToNow(createdDate, { addSuffix: true })
-        : null;
+      const timeAgo = createdDate ? formatDistanceToNow(createdDate, { addSuffix: true }) : null;
       return <p className="hidden md:block">{timeAgo}</p>;
     },
     sortingFn: "datetime",
@@ -128,7 +113,13 @@ export const columns: ColumnDef<Fragment>[] = [
   },
 ];
 
-const FragmentsActionHeader = ({ table, selectedCount }: { table: Table<Fragment>, selectedCount: number }) => {
+const FragmentsActionHeader = ({
+  table,
+  selectedCount,
+}: {
+  table: Table<Fragment>;
+  selectedCount: number;
+}) => {
   const auth = useAuth();
   // Create a mutation for deleting a fragment
   const deleteFragmentsMutation = useMutation({
@@ -175,12 +166,10 @@ const FragmentsActionHeader = ({ table, selectedCount }: { table: Table<Fragment
         className="w-48 p-2 bg-zinc-900 shadow-md border-none text-gray-300"
       >
         <DropdownMenuItem
-        disabled={selectedCount === 0 || deleteFragmentsMutation.isPending}
+          disabled={selectedCount === 0 || deleteFragmentsMutation.isPending}
           onClick={() => {
             // Handle bulk delete here
-            const selectedIds = table
-              .getSelectedRowModel()
-              .rows.map((row) => row.original.id);
+            const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id);
             deleteFragmentsMutation.mutate(selectedIds);
           }}
           className="cursor-pointer text-red-500 hover:bg-red-700/20 flex items-center"
@@ -191,7 +180,7 @@ const FragmentsActionHeader = ({ table, selectedCount }: { table: Table<Fragment
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};
 
 const FragmentActionsMenu = ({ fragment }: { fragment: Fragment }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -207,21 +196,21 @@ const FragmentActionsMenu = ({ fragment }: { fragment: Fragment }) => {
     onMutate: async (id: string) => {
       // Cancel any outgoing refetches for fragments
       await queryClient.cancelQueries({
-        queryKey: ['fragments']
+        queryKey: ["fragments"],
       });
 
       // Snapshot the previous fragments
-      const previousFragments = queryClient.getQueryData(['fragments']);
+      const previousFragments = queryClient.getQueryData(["fragments"]);
 
       // Optimistically remove the fragment
-      queryClient.setQueryData(['fragments'], (old: unknown) => {
+      queryClient.setQueryData(["fragments"], (old: unknown) => {
         // Check if old is an array
         if (Array.isArray(old)) {
-          return old.filter(f => f.id !== id);
+          return old.filter((f) => f.id !== id);
         }
-        
+
         // If not an array, return an empty array or the original data
-        console.warn('Fragments data is not an array:', old);
+        console.warn("Fragments data is not an array:", old);
         return old || [];
       });
 

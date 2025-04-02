@@ -8,15 +8,12 @@ import { FileWithPreview, FragmentType, User } from "@/utils/types";
 const fetchUserFragments = async (user: User) => {
   console.log("Requesting user fragments data...");
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments?expand=1`,
-      {
-        headers: {
-          Authorization: `Bearer ${user.idToken}`,
-          "Content-Type": user.contentType,
-        } as HeadersInit,
-      }
-    );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments?expand=1`, {
+      headers: {
+        Authorization: `Bearer ${user.idToken}`,
+        "Content-Type": user.contentType,
+      } as HeadersInit,
+    });
 
     if (!res.ok) {
       throw new Error(`${res.status} ${res.statusText}`);
@@ -33,14 +30,11 @@ const fetchUserFragments = async (user: User) => {
 };
 
 const fetchFragmentById = async (user: User, id: string) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${user.idToken}`,
-      } as HeadersInit,
-    }
-  );
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`, {
+    headers: {
+      Authorization: `Bearer ${user.idToken}`,
+    } as HeadersInit,
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch fragment details");
   }
@@ -70,17 +64,14 @@ const addUserFragment = async ({
     formData.append("content", content);
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`,
-    {
-      method: "POST",
-      body: content ? content : file,
-      headers: {
-        Authorization: `Bearer ${user.idToken}`,
-        "Content-Type": user.contentType,
-      } as HeadersInit,
-    }
-  );
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
+    method: "POST",
+    body: content ? content : file,
+    headers: {
+      Authorization: `Bearer ${user.idToken}`,
+      "Content-Type": user.contentType,
+    } as HeadersInit,
+  });
   if (!response.ok) {
     throw new Error(response.statusText);
   }
@@ -88,15 +79,12 @@ const addUserFragment = async ({
   return await response.json();
 };
 const deleteUserFragment = async (user: User, id: string) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${user.idToken}`,
-      } as HeadersInit,
-    }
-  );
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${user.idToken}`,
+    } as HeadersInit,
+  });
   if (!response.ok) {
     throw new Error("Failed to delete fragment details");
   }
@@ -105,15 +93,12 @@ const deleteUserFragment = async (user: User, id: string) => {
 const deleteUserFragments = async (user: User, ids: string[]) => {
   const queryString = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/v1/fragments?${queryString}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${user.idToken}`,
-      } as HeadersInit,
-    }
-  );
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments?${queryString}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${user.idToken}`,
+    } as HeadersInit,
+  });
 
   if (!response.ok) {
     throw new Error("Failed to delete fragments");

@@ -7,6 +7,6 @@ export const SubmitButton = ({ isLoading }: { isLoading: boolean }) => (
     className="w-full bg-orange-500 hover:bg-orange-600 transition-colors"
     disabled={isLoading}
   >
-    {isLoading ? 'Creating...' : 'Create Fragment'}
+    {isLoading ? "Creating..." : "Create Fragment"}
   </Button>
 );

@@ -75,7 +75,10 @@ const FileUploadInput = ({
   selectedType: FragmentType;
   onFileSelect: (file: File) => void;
 }) => (
-  <label htmlFor="file-upload" className="flex flex-col items-center justify-center cursor-pointer space-y-4">
+  <label
+    htmlFor="file-upload"
+    className="flex flex-col items-center justify-center cursor-pointer space-y-4"
+  >
     <input
       type="file"
       id="file-upload"

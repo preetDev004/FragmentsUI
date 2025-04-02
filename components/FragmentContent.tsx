@@ -1,17 +1,15 @@
-
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import type { FragmentsResponse } from "@/utils/types";
 
-
-export const FragmentContent = ({ data }: { data?: FragmentsResponse}) => {
-  if (!data || data.status !== 'ok' || !data.fragments?.length) {
+export const FragmentContent = ({ data }: { data?: FragmentsResponse }) => {
+  if (!data || data.status !== "ok" || !data.fragments?.length) {
     return (
       <Card className="p-6 bg-black/40 border-orange-900/50">
         <p className="text-gray-400">Your fragments will appear here.</p>
       </Card>
     );
-  } 
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -22,18 +20,16 @@ export const FragmentContent = ({ data }: { data?: FragmentsResponse}) => {
   );
 };
 
-const FragmentCard = ({ fragment }: { 
-  fragment: FragmentsResponse['fragments'][number] 
-}) => {
+const FragmentCard = ({ fragment }: { fragment: FragmentsResponse["fragments"][number] }) => {
   const renderContent = () => {
     try {
       switch (fragment.type) {
-        case 'text/plain':
-        case 'text/markdown':
-        case 'text/html':
+        case "text/plain":
+        case "text/markdown":
+        case "text/html":
           return <p className="text-gray-300 break-words">{fragment.content}</p>;
 
-        case 'application/json':
+        case "application/json":
           const parsedJson = JSON.parse(fragment.content);
           return (
             <pre className="text-gray-300 text-sm overflow-auto">
@@ -41,9 +37,9 @@ const FragmentCard = ({ fragment }: {
             </pre>
           );
 
-        case 'image/png':
-        case 'image/jpeg':
-        case 'image/webp':
+        case "image/png":
+        case "image/jpeg":
+        case "image/webp":
           return (
             <div className="relative aspect-video">
               <Image
@@ -60,7 +56,7 @@ const FragmentCard = ({ fragment }: {
           return <p className="text-gray-400">Unsupported fragment type</p>;
       }
     } catch (err: unknown) {
-        console.log(err)
+      console.log(err);
       return <p className="text-red-500">Error rendering content</p>;
     }
   };
@@ -78,9 +74,7 @@ const FragmentCard = ({ fragment }: {
           </time>
         )}
       </div>
-      <div className="max-h-64 overflow-hidden rounded-lg">
-        {renderContent()}
-      </div>
+      <div className="max-h-64 overflow-hidden rounded-lg">{renderContent()}</div>
     </Card>
   );
 };

@@ -17,9 +17,7 @@ const DashboardPage = () => {
     queryKey: ["fragments"],
     queryFn: async () => {
       if (!auth.isAuthenticated || !auth.user) return null;
-      return (await fragmentsApi.fetchUserFragments(
-        authUtils.getUser(auth.user))
-      );
+      return await fragmentsApi.fetchUserFragments(authUtils.getUser(auth.user));
     },
     enabled: auth.isAuthenticated,
   });

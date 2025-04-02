@@ -74,11 +74,7 @@ export const CreateFragmentForm = ({
 
     try {
       // We need to await the validation result since it's now a Promise
-      const validationMsg = await validateFragmentContent(
-        selectedType,
-        content,
-        file
-      );
+      const validationMsg = await validateFragmentContent(selectedType, content, file);
       if (validationMsg) {
         setError(validationMsg);
         return;
@@ -125,20 +121,14 @@ export const CreateFragmentForm = ({
         <div className="space-y-2">
           <label className="text-sm font-medium text-white">Content</label>
           {isTextType ? (
-            <TextContentInput
-              value={content}
-              onChange={setContent}
-              selectedType={selectedType}
-            />
+            <TextContentInput value={content} onChange={setContent} selectedType={selectedType} />
           ) : (
             <FileUploadArea
               selectedType={selectedType}
               file={file}
               isDragging={isDragging}
               handleDrag={handleDrag}
-              handleFileSelection={(file: File) =>
-                handleFileSelection(file, selectedType)
-              }
+              handleFileSelection={(file: File) => handleFileSelection(file, selectedType)}
               clearFile={clearFile}
             />
           )}

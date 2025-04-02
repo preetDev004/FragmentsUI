@@ -17,10 +17,18 @@ export function Footer() {
               Transforming manufacturing data management with cloud-native solutions.
             </p>
             <div className="flex space-x-4">
-              <a target="_blank" href="https://github.com/preetDev004" className="text-gray-400 hover:text-orange-500">
+              <a
+                target="_blank"
+                href="https://github.com/preetDev004"
+                className="text-gray-400 hover:text-orange-500"
+              >
                 <Github size={20} />
               </a>
-              <a target="_blank" href="https://www.linkedin.com/in/preet-patel-16908226a/" className="text-gray-400 hover:text-orange-500">
+              <a
+                target="_blank"
+                href="https://www.linkedin.com/in/preet-patel-16908226a/"
+                className="text-gray-400 hover:text-orange-500"
+              >
                 <Linkedin size={20} />
               </a>
             </div>
@@ -30,10 +38,26 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Product</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">Features</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">Pricing</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">Documentation</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">API Reference</a></li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  Features
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  Documentation
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  API Reference
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -41,26 +65,42 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Company</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">About</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">Blog</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">Careers</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-orange-500">Contact</a></li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  Blog
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  Careers
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-orange-500">
+                  Contact
+                </a>
+              </li>
             </ul>
           </div>
 
           {/* Newsletter */}
           <div>
             <h4 className="font-semibold text-white mb-4">Stay Updated</h4>
-            <p className="text-gray-400 mb-4">Subscribe to our newsletter for updates and insights.</p>
+            <p className="text-gray-400 mb-4">
+              Subscribe to our newsletter for updates and insights.
+            </p>
             <div className="space-y-2">
               <input
                 type="email"
                 placeholder="Enter your email"
                 className="w-full px-3 py-2 bg-black/40 border border-orange-900/50 rounded-md text-gray-300 focus:outline-none focus:border-orange-500"
               />
-              <Button className="w-full bg-orange-500 hover:bg-orange-600">
-                Subscribe
-              </Button>
+              <Button className="w-full bg-orange-500 hover:bg-orange-600">Subscribe</Button>
             </div>
           </div>
         </div>

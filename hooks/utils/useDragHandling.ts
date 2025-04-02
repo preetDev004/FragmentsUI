@@ -6,7 +6,7 @@ export const useDragHandling = () => {
 
   const handleDrag = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    setIsDragging(e.type === 'dragover');
+    setIsDragging(e.type === "dragover");
   }, []);
 
   return { isDragging, handleDrag };

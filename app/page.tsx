@@ -46,8 +46,8 @@ export default function Home() {
                 Fragment Storage Service
               </h1>
               <p className="text-gray-400 text-xl md:text-2xl max-w-3xl mx-auto mb-8">
-                A scalable cloud-based microservice for managing and processing
-                text and image fragments across your manufacturing systems.
+                A scalable cloud-based microservice for managing and processing text and image
+                fragments across your manufacturing systems.
               </p>
               <div className="relative z-20 flex gap-4 justify-center">
                 {auth.isAuthenticated ? (
@@ -86,10 +86,7 @@ export default function Home() {
         </div>
 
         {/* Features Grid */}
-        <section
-          id="features"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
-        >
+        <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -122,10 +119,7 @@ export default function Home() {
         </section>
 
         {/* Key Benefits */}
-        <section
-          id="benefits"
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20"
-        >
+        <section id="benefits" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -169,8 +163,8 @@ export default function Home() {
                 Ready to Transform Your Manufacturing Data?
               </h2>
               <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
-                Join the digital transformation journey and streamline your
-                manufacturing processes with our Fragment Storage Service.
+                Join the digital transformation journey and streamline your manufacturing processes
+                with our Fragment Storage Service.
               </p>
               <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
                 Contact Sales

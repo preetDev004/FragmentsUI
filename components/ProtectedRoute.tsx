@@ -1,4 +1,3 @@
-
 import { useRouter } from "next/navigation";
 import { useLayoutEffect } from "react";
 import { useAuth } from "react-oidc-context";
@@ -9,11 +8,11 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
   useLayoutEffect(() => {
     if (!auth.isLoading && !auth.isAuthenticated) {
-      router.replace('/');
+      router.replace("/");
     }
   }, [auth, router]);
 
   if (auth.isLoading || !auth.isAuthenticated) return null;
 
   return <>{children}</>;
-} 
+}
