@@ -189,59 +189,58 @@ const isMarkdown = (text : string) => {
 
 // Modify the isCSV function to return parsed content and validation status
 const isCSV = (file: FileWithPreview): Promise<{isValid: boolean}> => {
-  // First, check if the file has a CSV MIME type and extension
-  if (file.type !== 'text/csv') {
-    return Promise.resolve({isValid: false});
-  }
-  
-  const fileExtension = file.name.split('.').pop()?.toLowerCase();
-  if (fileExtension !== 'csv') {
-    return Promise.resolve({isValid: false});
+  // More flexible MIME type checking
+  const validMimeTypes = ['text/csv', 'application/csv', 'text/comma-separated-values'];
+  if (!validMimeTypes.includes(file.type.toLowerCase())) {
+    // If MIME type doesn't match but extension is CSV, still proceed with content validation
+    const fileExtension = file.name.split('.').pop()?.toLowerCase();
+    if (fileExtension !== 'csv') {
+      return Promise.resolve({isValid: false});
+    }
   }
 
   // Next, try to parse the content using PapaParse
   return new Promise((resolve) => {
-    // Create a file reader to read the file content
     const reader = new FileReader();
     
     reader.onload = (event) => {
       const content = event.target?.result as string;
       
+      // Check for empty file
+      if (!content || content.trim() === '') {
+        return resolve({isValid: false});
+      }
+      
       // Try parsing with PapaParse
       Papa.parse(content, {
-        header: true, // This will parse the first row as headers
+        header: true,
         skipEmptyLines: true,
         
-        // Complete callback - called when parsing is finished
         complete: (results) => {
-          console.log('Parsed CSV content:', results.data);
+          // Check if headers exist (at least one column)
+          const hasHeaders = results.meta.fields && results.meta.fields.length > 0;
           
-          // Check if PapaParse encountered errors or if data looks valid
           if (results.errors.length > 0) {
-            // File couldn't be parsed properly
             resolve({isValid: false});
-          } else if (results.data.length === 0) {
-            // No data rows found
+          } else if (!hasHeaders) {
+            // No headers found
             resolve({isValid: false});
           } else {
-            // Successfully parsed as CSV
+            // Successfully parsed as CSV with valid structure
             resolve({isValid: true});
           }
         },
         
-        // Error callback - if parsing fails catastrophically
         error: () => {
           resolve({isValid: false});
         }
       });
     };
     
-    // Error handling for file reading failures
     reader.onerror = () => {
       resolve({isValid: false});
     };
     
-    // Start reading the file as text
     reader.readAsText(file);
   });
 };
