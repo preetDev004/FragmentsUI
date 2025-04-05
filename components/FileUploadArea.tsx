@@ -16,7 +16,9 @@ export const FileUploadArea = ({
   selectedType: FragmentType;
   file: FileWithPreview | null;
   isDragging: boolean;
+  // eslint-disable-next-line no-unused-vars
   handleDrag: (e: React.DragEvent<HTMLDivElement>) => void;
+  // eslint-disable-next-line no-unused-vars
   handleFileSelection: (file: File) => void;
   clearFile: () => void;
 }) => (
@@ -73,6 +75,7 @@ const FileUploadInput = ({
   onFileSelect,
 }: {
   selectedType: FragmentType;
+  // eslint-disable-next-line no-unused-vars
   onFileSelect: (file: File) => void;
 }) => (
   <label

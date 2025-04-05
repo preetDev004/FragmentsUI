@@ -7,6 +7,7 @@ export const TextContentInput = ({
   selectedType,
 }: {
   value: string;
+  // eslint-disable-next-line no-unused-vars
   onChange: (value: string) => void;
   selectedType: FragmentType;
 }) => (

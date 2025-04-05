@@ -15,6 +15,7 @@ import { AlertCircle, Clock, Info, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import QuickLRU from "quick-lru";
+import Image from "next/image";
 
 // Use QuickLRU with a max size limit to prevent unbounded memory growth
 const fragmentContentCache = new QuickLRU<string, { content: string; timestamp: number }>({
@@ -28,6 +29,7 @@ export const FragmentDetailsDialog = ({
   user,
 }: {
   isOpen: boolean;
+  // eslint-disable-next-line no-unused-vars
   onOpenChange: (open: boolean) => void;
   fragment: Fragment;
   user: User;
@@ -108,8 +110,9 @@ export const FragmentDetailsDialog = ({
   useEffect(() => {
     if (isOpen) {
       setViewFormat("original");
+      console.log(fragmentData);
     }
-  }, [isOpen]);
+  }, [isOpen, fragmentData]);
 
   const createdDate = fragment.created ? new Date(fragment.created) : null;
   const fullDate = createdDate ? format(createdDate, "d MMM yyyy, h:mm a") : null;
@@ -215,11 +218,31 @@ export const FragmentDetailsDialog = ({
               Error loading fragment content
             </div>
           ) : (
-            <div className="flex-1 w-full bg-black border border-orange-900/30 p-4 rounded-md max-h-80 overflow-auto font-mono text-sm whitespace-pre-wrap text-orange-100/90 relative">
-              <div className="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-black to-transparent pointer-events-none"></div>
-              <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
-              {fragmentData || "No content available"}
-            </div>
+            <>
+              {fragment.type.startsWith("image/") ? (
+                <div className="flex-1 w-full flex items-center justify-center py-4 bg-black/40 border border-orange-900/30 rounded-md">
+                  <div className="relative max-h-80 flex items-center justify-center overflow-hidden">
+                    {fragmentData ? (
+                      <Image
+                        src={fragmentData} // Now fragmentData is already a data URL
+                        width={500}
+                        height={500}
+                        alt={`Fragment ${fragment.id}`}
+                        className="max-w-full max-h-80 object-contain rounded p-4"
+                      />
+                    ) : (
+                      <div className="text-orange-400/80 text-sm">No image data available</div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 w-full bg-black border border-orange-900/30 p-4 rounded-md max-h-80 overflow-auto font-mono text-sm whitespace-pre-wrap text-orange-100/90 relative">
+                  <div className="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-black to-transparent pointer-events-none"></div>
+                  <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
+                  {fragmentData || "No content available"}
+                </div>
+              )}
+            </>
           )}
         </div>
       </DialogContent>

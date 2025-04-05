@@ -6,9 +6,12 @@ export const VALID_FRAGMENT_TYPES = [
   "text/html",
   "text/csv",
   "application/json",
+
   "image/png",
   "image/jpeg",
   "image/webp",
+  "image/avif",
+  "image/gif",
 ] as const;
 
 export const VALID_FRAGMENT_GROUPS = {
@@ -19,5 +22,12 @@ export const VALID_FRAGMENT_GROUPS = {
     "text/csv",
     "application/json",
   ] as FragmentType[],
-  imageTypes: ["image/png", "image/jpeg", "image/webp"] as FragmentType[],
+
+  imageTypes: [
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/avif",
+    "image/gif",
+  ] as FragmentType[],
 };

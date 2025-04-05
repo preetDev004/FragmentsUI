@@ -16,6 +16,7 @@ export const CreateFragmentDialog = ({
   user,
 }: {
   isOpen: boolean;
+  // eslint-disable-next-line no-unused-vars
   onOpenChange: (open: boolean) => void;
   user: User;
 }) => (

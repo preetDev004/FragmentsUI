@@ -20,6 +20,7 @@ export const CreateFragmentForm = ({
   onOpenChange,
   user,
 }: {
+  // eslint-disable-next-line no-unused-vars
   onOpenChange: (open: boolean) => void;
   user: User;
 }) => {
@@ -88,13 +89,9 @@ export const CreateFragmentForm = ({
     }
   };
 
-  const isTextType = [
-    "text/plain",
-    "text/markdown",
-    "text/html",
-    // 'text/csv',
-    "application/json",
-  ].includes(selectedType);
+  const isTextType = ["text/plain", "text/markdown", "text/html", "application/json"].includes(
+    selectedType
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 w-full">

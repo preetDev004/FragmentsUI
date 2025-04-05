@@ -15,6 +15,7 @@ export const FragmentTypeSelect = ({
   onTypeChange,
 }: {
   selectedType: FragmentType;
+  // eslint-disable-next-line no-unused-vars
   onTypeChange: (type: FragmentType) => void;
 }) => (
   <div className="space-y-2">

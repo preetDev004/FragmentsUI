@@ -35,13 +35,24 @@ const fetchFragmentById = async (user: User, id: string) => {
       Authorization: `Bearer ${user.idToken}`,
     } as HeadersInit,
   });
+
   if (!response.ok) {
     throw new Error("Failed to fetch fragment details");
   }
+
   const contentType = response.headers.get("Content-Type");
   if (!contentType) {
     throw new Error("Failed to fetch fragment details");
   }
+
+  // For image types, get an arrayBuffer and convert to base64
+  if (contentType.startsWith("image/")) {
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    return `data:${contentType};base64,${base64}`;
+  }
+
+  // For text types, just return the text
   return response.text();
 };
 
@@ -56,28 +67,43 @@ const addUserFragment = async ({
   file: FileWithPreview | null;
   user: User;
 }): Promise<unknown> => {
-  const formData = new FormData();
-  formData.append("type", type);
+  let body;
+
   if (file) {
-    formData.append("file", file);
+    if (type.startsWith("image/") && file.preview) {
+      // For image files with preview (data URL), extract just the base64 data
+      try {
+        // Remove the data URL prefix (e.g., "data:image/png;base64,")
+        const base64Response = await fetch(file.preview);
+        const blob = await base64Response.blob();
+        body = blob;
+      } catch (error) {
+        console.error("Error processing image file:", error);
+        body = file; // Fallback to using the original file
+      }
+    } else {
+      body = file;
+    }
   } else {
-    formData.append("content", content);
+    body = content;
   }
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments`, {
     method: "POST",
-    body: content ? content : file,
+    body,
     headers: {
       Authorization: `Bearer ${user.idToken}`,
-      "Content-Type": user.contentType,
+      "Content-Type": type,
     } as HeadersInit,
   });
+
   if (!response.ok) {
     throw new Error(response.statusText);
   }
 
   return await response.json();
 };
+
 const deleteUserFragment = async (user: User, id: string) => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`, {
     method: "DELETE",
