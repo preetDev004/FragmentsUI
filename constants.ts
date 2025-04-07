@@ -31,3 +31,12 @@ export const VALID_FRAGMENT_GROUPS = {
     "image/gif",
   ] as FragmentType[],
 };
+
+export const VALID_FRAGMENT_CONVERSIONS = {
+  "text/plain": [],
+  "text/markdown": ["text/plain", "text/html"],
+  "text/html": ["text/plain"],
+  "text/csv": ["text/plain", "application/json"],
+  "application/json": ["text/plain", "text/yaml"],
+  "application/yaml": ["text/plain"],
+};

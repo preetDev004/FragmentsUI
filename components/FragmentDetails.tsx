@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import QuickLRU from "quick-lru";
 import Image from "next/image";
+import { VALID_FRAGMENT_CONVERSIONS } from "@/constants";
 
 // Use QuickLRU with a max size limit to prevent unbounded memory growth
 const fragmentContentCache = new QuickLRU<string, { content: string; timestamp: number }>({
@@ -36,7 +37,7 @@ export const FragmentDetailsDialog = ({
 }) => {
   const auth = useAuth();
   const { toast } = useToast();
-  const [viewFormat, setViewFormat] = useState<"original" | "html">("original");
+  const [viewFormat, setViewFormat] = useState<string>("original");
 
   // Generate a cache key that includes the fragment ID and specific format
   const getCacheKey = (fragmentId: string, format: string) => `${fragmentId}-${format}`;
@@ -55,10 +56,15 @@ export const FragmentDetailsDialog = ({
       if (!auth.isAuthenticated || !auth.user) return null;
 
       // Determine the correct endpoint and cache key based on view format
-      const endpoint =
-        viewFormat === "html" && fragment.type === "text/markdown"
-          ? `${fragment.id}.html`
-          : fragment.id;
+      let endpoint = fragment.id;
+
+      // If viewFormat is not "original", use the extension for conversion
+      if (viewFormat !== "original") {
+        // Extract the subtype (e.g., "html" from "text/html")
+        const extension = viewFormat.split("/")[1];
+        endpoint = `${fragment.id}.${extension}`;
+      }
+
       const cacheKey = getCacheKey(fragment.id, viewFormat);
 
       // Check if content is in cache and not too old
@@ -110,9 +116,8 @@ export const FragmentDetailsDialog = ({
   useEffect(() => {
     if (isOpen) {
       setViewFormat("original");
-      console.log(fragmentData);
     }
-  }, [isOpen, fragmentData]);
+  }, [isOpen]);
 
   const createdDate = fragment.created ? new Date(fragment.created) : null;
   const fullDate = createdDate ? format(createdDate, "d MMM yyyy, h:mm a") : null;
@@ -183,11 +188,9 @@ export const FragmentDetailsDialog = ({
             <h3 className="text-orange-300 text-sm uppercase tracking-wider font-semibold">
               Content
             </h3>
-            {fragment.type === "text/markdown" && (
-              <Select
-                value={viewFormat}
-                onValueChange={(value: "original" | "html") => setViewFormat(value)}
-              >
+            {VALID_FRAGMENT_CONVERSIONS[fragment.type as keyof typeof VALID_FRAGMENT_CONVERSIONS]
+              ?.length > 0 && (
+              <Select value={viewFormat} onValueChange={(value: string) => setViewFormat(value)}>
                 <SelectTrigger className="w-32 bg-orange-950/30 border-orange-900/30 text-orange-300">
                   <SelectValue placeholder="View as..." />
                 </SelectTrigger>
@@ -195,9 +198,13 @@ export const FragmentDetailsDialog = ({
                   <SelectItem value="original" className="text-orange-300">
                     Original
                   </SelectItem>
-                  <SelectItem value="html" className="text-orange-300">
-                    HTML
-                  </SelectItem>
+                  {VALID_FRAGMENT_CONVERSIONS[
+                    fragment.type as keyof typeof VALID_FRAGMENT_CONVERSIONS
+                  ]?.map((format) => (
+                    <SelectItem key={format} value={format} className="text-orange-300">
+                      {format.split("/")[1].toUpperCase()}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
