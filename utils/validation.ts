@@ -52,7 +52,6 @@ export const validateFragmentContent = async (
       if (!(await isPNG(file))) {
         return "Invalid PNG format";
       }
-      console.log("PNG file validated successfully");
       break;
 
     case "image/jpeg":

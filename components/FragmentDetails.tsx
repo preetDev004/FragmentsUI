@@ -1,27 +1,16 @@
-import { fragmentsApi } from "@/app/api";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Fragment, User } from "@/utils/types";
-import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertCircle, Clock, Download, Info, Tag } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useAuth } from "react-oidc-context";
-import QuickLRU from "quick-lru";
-import Image from "next/image";
-import { VALID_FRAGMENT_CONVERSIONS } from "@/constants";
-
-// Use QuickLRU with a max size limit to prevent unbounded memory growth
-const fragmentContentCache = new QuickLRU<string, { content: string; timestamp: number }>({
-  maxSize: 100, // Adjust this value based on expected usage
-});
+import { AlertCircle } from "lucide-react";
+import { useEffect } from "react";
+import { FragmentContentControls } from "./fragments/FragmentContentControls";
+import { FragmentContentEditor } from "./fragments/FragmentContentEditor";
+import { FragmentContentViewer } from "./fragments/FragmentContentViewer";
+import { FragmentMetadata } from "./fragments/FragmentMetadata";
+import { useFragmentContent } from "@/hooks/useFragmentContent";
+import { useFragmentUpdate } from "@/hooks/useFragmentUpdate";
+import { downloadFragmentContent, isEditableType } from "@/utils/helpers";
 
 export const FragmentDetailsDialog = ({
   isOpen,
@@ -35,71 +24,32 @@ export const FragmentDetailsDialog = ({
   fragment: Fragment;
   user: User;
 }) => {
-  const auth = useAuth();
   const { toast } = useToast();
-  const [viewFormat, setViewFormat] = useState<string>("original");
 
-  // Generate a cache key that includes the fragment ID and specific format
-  const getCacheKey = (fragmentId: string, format: string) => `${fragmentId}-${format}`;
-
-  // Single query to fetch fragment content
+  // Use custom hooks for fetching content and handling updates
   const {
-    data: fragmentData,
+    fragmentData,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["fragments", fragment.id, viewFormat],
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    queryFn: async () => {
-      if (!auth.isAuthenticated || !auth.user) return null;
+    refetch,
+    viewFormat,
+    setViewFormat,
+    isFormatChanging,
+    setIsFormatChanging,
+    clearAllCachedFormatsForFragment,
+  } = useFragmentContent(fragment, user, isOpen);
 
-      // Determine the correct endpoint and cache key based on view format
-      let endpoint = fragment.id;
-
-      // If viewFormat is not "original", use the extension for conversion
-      if (viewFormat !== "original") {
-        // Extract the subtype (e.g., "html" from "text/html")
-        const extension = viewFormat.split("/")[1];
-        endpoint = `${fragment.id}.${extension}`;
-      }
-
-      const cacheKey = getCacheKey(fragment.id, viewFormat);
-
-      // Check if content is in cache and not too old
-      const cachedContent = fragmentContentCache.get(cacheKey);
-      if (cachedContent && Date.now() - cachedContent.timestamp < 30 * 60 * 1000) {
-        // 30 minutes cache
-        return cachedContent.content;
-      }
-
-      // Fetch content
-      try {
-        const fetchedContent = await fragmentsApi.fetchFragmentById(user, endpoint);
-
-        // Cache the new content
-        fragmentContentCache.set(cacheKey, {
-          content: fetchedContent,
-          timestamp: Date.now(),
-        });
-
-        return fetchedContent;
-      } catch (err) {
-        console.error(err);
-
-        // Cache the error state
-        const errorMessage = "Error loading fragment content";
-        fragmentContentCache.set(cacheKey, {
-          content: errorMessage,
-          timestamp: Date.now(),
-        });
-
-        throw err;
-      }
-    },
-    enabled: !!auth.isAuthenticated && !!auth.user && isOpen,
-  });
+  const {
+    isEditing,
+    setIsEditing,
+    editedContent,
+    setEditedContent,
+    validationError,
+    setValidationError,
+    isPending,
+    handleSaveClick,
+    formatContentForEdit,
+  } = useFragmentUpdate(fragment, user, refetch, clearAllCachedFormatsForFragment);
 
   // Error handling effect
   useEffect(() => {
@@ -112,29 +62,42 @@ export const FragmentDetailsDialog = ({
     }
   }, [error, toast]);
 
-  // Reset view format when dialog opens
+  // Reset states when dialog opens/closes
   useEffect(() => {
     if (isOpen) {
       setViewFormat("original");
+      setIsEditing(false);
+      setValidationError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, setViewFormat, setIsEditing, setValidationError]);
 
-  const handleImageDownload = () => {
-    if (!fragmentData) return;
+  // Modify this effect to add a check that prevents overriding during edit
+  useEffect(() => {
+    if (fragmentData && !isLoading && isEditableType(fragment.type) && !isEditing) {
+      // Only update if we're not currently editing
+      setEditedContent(formatContentForEdit(fragmentData, fragment.type));
+    }
+  }, [fragmentData, isLoading, fragment.type, formatContentForEdit, setEditedContent, isEditing]);
 
-    // Determine the file extension based on current viewFormat
-    const extension =
-      viewFormat === "original" ? fragment.type.split("/")[1] : viewFormat.split("/")[1];
+  // Clear format changing state when data loads
+  useEffect(() => {
+    if (!isLoading && isFormatChanging) {
+      setIsFormatChanging(false);
+    }
+  }, [fragmentData, isLoading, isFormatChanging, setIsFormatChanging]);
 
-    // Create a temporary anchor element for download
-    const link = document.createElement("a");
-    link.href = fragmentData;
-    link.download = `fragment-${fragment.id}.${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Handle image download
+  const handleImageDownload = () =>
+    downloadFragmentContent(fragment.id, fragmentData || "", fragment.type, viewFormat);
+
+  // Handle cancel editing
+  const handleCancel = () => {
+    setIsEditing(false);
+    setValidationError(null);
+    if (fragmentData) setEditedContent(fragmentData);
   };
 
+  // Format date for display
   const createdDate = fragment.created ? new Date(fragment.created) : null;
   const fullDate = createdDate ? format(createdDate, "d MMM yyyy, h:mm a") : null;
 
@@ -147,86 +110,27 @@ export const FragmentDetailsDialog = ({
           </DialogTitle>
         </DialogHeader>
 
-        {/* Metadata Section (unchanged) */}
-        <div className="mt-4 mb-4 bg-orange-950/10 border border-orange-900/20 rounded-lg overflow-hidden backdrop-blur-sm w-full">
-          <div className="grid grid-cols-2 gap-2">
-            {/* ID - First Row, Full Width */}
-            <div className="col-span-2">
-              <div className="flex items-center space-x-3 p-2 rounded-md bg-orange-950/30">
-                <Info size={18} className="text-orange-400" />
-                <div className="flex flex-col">
-                  <span className="text-orange-300 text-xs uppercase tracking-wider font-semibold">
-                    ID
-                  </span>
-                  <div className="text-white/90 text-xs font-mono mt-1 overflow-hidden text-ellipsis w-full">
-                    {fragment.id}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Created - Second Row, Right Column */}
-            <div className="col-span-1">
-              <div className="flex items-center space-x-3 p-2 rounded-md bg-orange-950/30">
-                <Clock size={18} className="text-orange-400" />
-                <div className="flex flex-col">
-                  <span className="text-orange-300 text-xs uppercase tracking-wider font-semibold">
-                    Created
-                  </span>
-                  <div className="text-white/90 text-sm mt-1">
-                    {fullDate || "Unknown"} {/* Use fullDate here */}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Type - Second Row, Left Column */}
-            <div className="col-span-1">
-              <div className="flex items-center space-x-3 p-2 rounded-md bg-orange-950/30">
-                <Tag size={18} className="text-orange-400" />
-                <div className="flex flex-col">
-                  <span className="text-orange-300 text-xs uppercase tracking-wider font-semibold">
-                    Type
-                  </span>
-                  <div className="text-white/90 text-sm mt-1 flex items-center">
-                    <span className="inline-block w-2 h-2 rounded-full bg-orange-400 mr-2"></span>
-                    {fragment.type || "text/plain"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Metadata Section */}
+        <FragmentMetadata fragment={fragment} formattedDate={fullDate} />
 
         {/* Content Section */}
         <div className="flex flex-col w-full">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-orange-300 text-sm uppercase tracking-wider font-semibold">
-              Content
-            </h3>
-            {VALID_FRAGMENT_CONVERSIONS[fragment.type as keyof typeof VALID_FRAGMENT_CONVERSIONS]
-              ?.length > 0 && (
-              <Select value={viewFormat} onValueChange={(value: string) => setViewFormat(value)}>
-                <SelectTrigger className="w-32 bg-orange-950/30 border-orange-900/30 text-orange-300">
-                  <SelectValue placeholder="View as..." />
-                </SelectTrigger>
-                <SelectContent className="bg-black/95 border-orange-900/50">
-                  <SelectItem value="original" className="text-orange-300">
-                    Original
-                  </SelectItem>
-                  {VALID_FRAGMENT_CONVERSIONS[
-                    fragment.type as keyof typeof VALID_FRAGMENT_CONVERSIONS
-                  ]?.map((format) => (
-                    <SelectItem key={format} value={format} className="text-orange-300">
-                      {format.split("/")[1].toUpperCase()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+          <FragmentContentControls
+            fragment={fragment}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            isLoading={isLoading}
+            handleSave={handleSaveClick}
+            handleCancel={handleCancel}
+            viewFormat={viewFormat}
+            setViewFormat={setViewFormat}
+            setIsFormatChanging={setIsFormatChanging}
+            isPending={isPending}
+            hasError={!!error}
+            isEditableType={isEditableType}
+          />
 
-          {isLoading ? (
+          {isLoading || isFormatChanging ? (
             <div className="flex-1 flex flex-col items-center justify-center py-8">
               <div className="animate-pulse flex space-x-2">
                 <div className="w-3 h-3 bg-orange-600 rounded-full animate-bounce"></div>
@@ -240,57 +144,23 @@ export const FragmentDetailsDialog = ({
               <AlertCircle size={18} className="text-red-400 mr-2" />
               Error loading fragment content
             </div>
+          ) : isEditing && !fragment.type.startsWith("image/") ? (
+            <FragmentContentEditor
+              fragment={fragment}
+              editedContent={editedContent}
+              setEditedContent={setEditedContent}
+              validationError={validationError}
+              setValidationError={setValidationError}
+              isPending={isPending}
+            />
           ) : (
-            <>
-              {fragment.type.startsWith("image/") ? (
-                <div className="flex-1 w-full flex flex-col items-center justify-center py-4 bg-black/40 border border-orange-900/30 rounded-md">
-                  <div className="relative max-h-80 flex items-center justify-center overflow-hidden">
-                    {isLoading ? (
-                      <div className="text-center">
-                        <div className="animate-pulse flex space-x-2 justify-center">
-                          <div className="w-3 h-3 bg-orange-600 rounded-full animate-bounce"></div>
-                          <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce delay-75"></div>
-                          <div className="w-3 h-3 bg-orange-400 rounded-full animate-bounce delay-150"></div>
-                        </div>
-                        <div className="text-orange-400/80 text-sm mt-4">Converting image...</div>
-                      </div>
-                    ) : fragmentData ? (
-                      <>
-                        <Image
-                          src={fragmentData}
-                          width={500}
-                          height={500}
-                          alt={`Fragment ${fragment.id}`}
-                          className="max-w-full max-h-80 object-contain rounded p-4"
-                        />
-                      </>
-                    ) : (
-                      <div className="text-orange-400/80 text-sm">No image data available</div>
-                    )}
-                  </div>
-
-                  {/* Download Button */}
-                  {fragmentData && !isLoading && (
-                    <button
-                      onClick={handleImageDownload}
-                      className="mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md flex items-center justify-center transition-colors"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download{" "}
-                      {viewFormat === "original"
-                        ? fragment.type.split("/")[1].toUpperCase()
-                        : viewFormat.split("/")[1].toUpperCase()}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="flex-1 w-full bg-black border border-orange-900/30 p-4 rounded-md max-h-80 overflow-auto font-mono text-sm whitespace-pre-wrap text-orange-100/90 relative">
-                  <div className="absolute top-0 left-0 w-full h-6 bg-gradient-to-b from-black to-transparent pointer-events-none"></div>
-                  <div className="absolute bottom-0 left-0 w-full h-6 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
-                  {fragmentData || "No content available"}
-                </div>
-              )}
-            </>
+            <FragmentContentViewer
+              fragment={fragment}
+              fragmentData={fragmentData || ""}
+              isLoading={isLoading}
+              viewFormat={viewFormat}
+              handleImageDownload={handleImageDownload}
+            />
           )}
         </div>
       </DialogContent>
