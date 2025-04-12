@@ -39,4 +39,11 @@ export const VALID_FRAGMENT_CONVERSIONS = {
   "text/csv": ["text/plain", "application/json"],
   "application/json": ["text/plain", "text/yaml"],
   "application/yaml": ["text/plain"],
+
+  "image/png": ["image/jpeg", "image/webp", "image/gif", "image/avif"],
+  "image/jpeg": ["image/png", "image/webp", "image/gif", "image/avif"],
+  "image/webp": ["image/jpeg", "image/png", "image/gif", "image/avif"],
+  "image/avif": [],
+  // "image/avif": ["image/jpeg", "image/webp", "image/gif", "image/png"],
+  "image/gif": ["image/jpeg", "image/webp", "image/png", "image/avif"],
 };

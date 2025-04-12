@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Fragment, User } from "@/utils/types";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertCircle, Clock, Info, Tag } from "lucide-react";
+import { AlertCircle, Clock, Download, Info, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "react-oidc-context";
 import QuickLRU from "quick-lru";
@@ -118,6 +118,22 @@ export const FragmentDetailsDialog = ({
       setViewFormat("original");
     }
   }, [isOpen]);
+
+  const handleImageDownload = () => {
+    if (!fragmentData) return;
+
+    // Determine the file extension based on current viewFormat
+    const extension =
+      viewFormat === "original" ? fragment.type.split("/")[1] : viewFormat.split("/")[1];
+
+    // Create a temporary anchor element for download
+    const link = document.createElement("a");
+    link.href = fragmentData;
+    link.download = `fragment-${fragment.id}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const createdDate = fragment.created ? new Date(fragment.created) : null;
   const fullDate = createdDate ? format(createdDate, "d MMM yyyy, h:mm a") : null;
@@ -227,20 +243,45 @@ export const FragmentDetailsDialog = ({
           ) : (
             <>
               {fragment.type.startsWith("image/") ? (
-                <div className="flex-1 w-full flex items-center justify-center py-4 bg-black/40 border border-orange-900/30 rounded-md">
+                <div className="flex-1 w-full flex flex-col items-center justify-center py-4 bg-black/40 border border-orange-900/30 rounded-md">
                   <div className="relative max-h-80 flex items-center justify-center overflow-hidden">
-                    {fragmentData ? (
-                      <Image
-                        src={fragmentData} // Now fragmentData is already a data URL
-                        width={500}
-                        height={500}
-                        alt={`Fragment ${fragment.id}`}
-                        className="max-w-full max-h-80 object-contain rounded p-4"
-                      />
+                    {isLoading ? (
+                      <div className="text-center">
+                        <div className="animate-pulse flex space-x-2 justify-center">
+                          <div className="w-3 h-3 bg-orange-600 rounded-full animate-bounce"></div>
+                          <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce delay-75"></div>
+                          <div className="w-3 h-3 bg-orange-400 rounded-full animate-bounce delay-150"></div>
+                        </div>
+                        <div className="text-orange-400/80 text-sm mt-4">Converting image...</div>
+                      </div>
+                    ) : fragmentData ? (
+                      <>
+                        <Image
+                          src={fragmentData}
+                          width={500}
+                          height={500}
+                          alt={`Fragment ${fragment.id}`}
+                          className="max-w-full max-h-80 object-contain rounded p-4"
+                        />
+                      </>
                     ) : (
                       <div className="text-orange-400/80 text-sm">No image data available</div>
                     )}
                   </div>
+
+                  {/* Download Button */}
+                  {fragmentData && !isLoading && (
+                    <button
+                      onClick={handleImageDownload}
+                      className="mt-4 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-md flex items-center justify-center transition-colors"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download{" "}
+                      {viewFormat === "original"
+                        ? fragment.type.split("/")[1].toUpperCase()
+                        : viewFormat.split("/")[1].toUpperCase()}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="flex-1 w-full bg-black border border-orange-900/30 p-4 rounded-md max-h-80 overflow-auto font-mono text-sm whitespace-pre-wrap text-orange-100/90 relative">
