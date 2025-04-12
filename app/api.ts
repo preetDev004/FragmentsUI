@@ -116,6 +116,7 @@ const deleteUserFragment = async (user: User, id: string) => {
   }
   return;
 };
+
 const deleteUserFragments = async (user: User, ids: string[]) => {
   const queryString = ids.map((id) => `ids=${encodeURIComponent(id)}`).join("&");
 
@@ -131,10 +132,28 @@ const deleteUserFragments = async (user: User, ids: string[]) => {
   }
 };
 
+const updateUserFragment = async (user: User, id: string, content: string, type: FragmentType) => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/fragments/${id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${user.idToken}`,
+      "Content-Type": type,
+    } as HeadersInit,
+    body: content,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update fragment: ${response.statusText}`);
+  }
+
+  return await response.json();
+};
+
 export const fragmentsApi = {
   fetchUserFragments,
   fetchFragmentById,
   addUserFragment,
   deleteUserFragment,
   deleteUserFragments,
+  updateUserFragment,
 };
