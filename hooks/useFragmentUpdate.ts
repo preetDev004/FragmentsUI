@@ -9,6 +9,7 @@ export function useFragmentUpdate(
   fragment: Fragment,
   user: User,
   refetch: () => void,
+  // eslint-disable-next-line no-unused-vars
   clearAllCachedFormatsForFragment: (fragmentId: string) => void
 ) {
   const { toast } = useToast();
